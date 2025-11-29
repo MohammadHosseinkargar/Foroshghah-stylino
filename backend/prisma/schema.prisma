@@ -1,0 +1,128 @@
+generator client {
+  provider  = "prisma-client-py"
+  interface = "asyncio"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  CANCELED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum CommissionStatus {
+  PENDING
+  PAID
+}
+
+model User {
+  id            Int       @id @default(autoincrement())
+  name          String
+  email         String    @unique
+  phone         String?   @unique
+  passwordHash  String
+  role          Role      @default(CUSTOMER)
+  referralCode  String    @unique
+  referredById  Int?
+  referredBy    User?     @relation("UserReferral", fields: [referredById], references: [id])
+  referrals     User[]    @relation("UserReferral")
+  products      Product[]
+  orders        Order[]   @relation("UserOrders")
+  commissionsTo Commission[] @relation("CommissionToUser")
+  commissionsFrom Commission[] @relation("CommissionFromUser")
+  sellerPayouts SellerPayout[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Category {
+  id    Int    @id @default(autoincrement())
+  name  String
+  slug  String @unique
+  products Product[]
+}
+
+model Product {
+  id            Int      @id @default(autoincrement())
+  sellerId      Int
+  seller        User     @relation(fields: [sellerId], references: [id])
+  name          String
+  description   String
+  basePrice     Float
+  discountPrice Float?
+  categoryId    Int
+  category      Category @relation(fields: [categoryId], references: [id])
+  brand         String
+  colors        Json
+  sizes         Json
+  images        Json
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  orderItems    OrderItem[]
+}
+
+model Order {
+  id            Int          @id @default(autoincrement())
+  customerId    Int
+  customer      User         @relation("UserOrders", fields: [customerId], references: [id])
+  totalAmount   Float
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+  items         OrderItem[]
+  commissions   Commission[]
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    Int
+  order      Order   @relation(fields: [orderId], references: [id])
+  productId  Int
+  product    Product @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
+}
+
+model Commission {
+  id          Int              @id @default(autoincrement())
+  orderId     Int
+  order       Order            @relation(fields: [orderId], references: [id])
+  fromUserId  Int
+  fromUser    User             @relation("CommissionFromUser", fields: [fromUserId], references: [id])
+  toUserId    Int
+  toUser      User             @relation("CommissionToUser", fields: [toUserId], references: [id])
+  level       Int
+  amount      Float
+  status      CommissionStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+}
+
+model SellerPayout {
+  id         Int      @id @default(autoincrement())
+  sellerId   Int
+  seller     User     @relation(fields: [sellerId], references: [id])
+  amount     Float
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+}
