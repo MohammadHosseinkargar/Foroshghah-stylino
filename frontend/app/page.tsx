@@ -35,7 +35,7 @@ export default function Home() {
   const [orderMessage, setOrderMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [quickView, setQuickView] = useState<DisplayProduct | null>(null);
-  const { addItem, items, total, removeItem, clear } = useCart();
+  const { addItem, items, removeItem, decrementItem, clearCart, getTotalPrice, getTotalCount, isEmpty } = useCart();
   const { token, user } = useAuth();
   const router = useRouter();
 
@@ -97,7 +97,6 @@ export default function Home() {
       productId: product.id,
       name: product.name,
       price: product.price,
-      quantity: 1,
       image: product.image,
     });
   };
@@ -109,8 +108,8 @@ export default function Home() {
       router.push("/auth");
       return;
     }
-    if (items.length === 0) {
-      setError("سبد خرید خالی است.");
+    if (isEmpty || getTotalCount() === 0) {
+      setError("Your cart is empty.");
       return;
     }
     try {
@@ -123,12 +122,14 @@ export default function Home() {
         token
       );
       await apiRequest(`/orders/${order.id}/pay`, { method: "POST" }, token);
-      setOrderMessage("سفارش ثبت و پرداخت شد. کمیسیون‌های ارجاع محاسبه گردید.");
-      clear();
+      setOrderMessage("Your order was placed and paid successfully.");
+      clearCart();
     } catch (e: any) {
-      setError(e.message || "خطا در ثبت سفارش");
+      setError(e.message || "Failed to place order.");
     }
   };
+
+  const totalPrice = getTotalPrice();
 
   return (
     <div className="space-y-12 bg-[radial-gradient(circle_at_10%_20%,#fff7fb,transparent_25%),radial-gradient(circle_at_90%_10%,#fef2f8,transparent_25%)]">
@@ -195,9 +196,9 @@ export default function Home() {
             <h3 className="text-xl font-bold text-brand-900">سبد شما</h3>
             <p className="text-sm text-gray-600">سفارش واقعی با API بک‌اند ثبت می‌شود.</p>
           </div>
-          <div className="text-lg font-bold text-brand-800">{total.toLocaleString()} تومان</div>
+          <div className="text-lg font-bold text-brand-800">{totalPrice.toLocaleString()} تومان</div>
         </div>
-        {items.length === 0 ? (
+        {isEmpty ? (
           <div className="mt-4 space-y-3">
             <p className="text-sm text-gray-600">سبد خالی است.</p>
             <button className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
@@ -211,12 +212,27 @@ export default function Home() {
                 <div>
                   <p className="font-semibold text-brand-900">{i.name}</p>
                   <p className="text-xs text-gray-600">
-                    {i.quantity} عدد × {i.price.toLocaleString()} = {(i.price * i.quantity).toLocaleString()} تومان
+                    {i.quantity} O1O_O_ A- {i.price.toLocaleString()} = {(i.price * i.quantity).toLocaleString()} O?U^U.OU+
                   </p>
                 </div>
-                <button className="text-sm text-red-500" onClick={() => removeItem(i.productId)}>
-                  حذف
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    className="rounded-full border border-brand-200 px-2 py-1 text-sm text-brand-800 hover:bg-brand-50"
+                    onClick={() => decrementItem(i.productId)}
+                  >
+                    -
+                  </button>
+                  <span className="min-w-[2rem] text-center text-sm font-semibold text-brand-900">{i.quantity}</span>
+                  <button
+                    className="rounded-full border border-brand-200 px-2 py-1 text-sm text-brand-800 hover:bg-brand-50"
+                    onClick={() => addItem({ productId: i.productId, name: i.name, price: i.price, image: i.image })}
+                  >
+                    +
+                  </button>
+                  <button className="text-sm text-red-500" onClick={() => removeItem(i.productId)}>
+                    O-O?U?
+                  </button>
+                </div>
               </div>
             ))}
             {error && <p className="text-sm text-red-600">{error}</p>}

@@ -25,7 +25,6 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
       productId: product.id,
       name: product.name,
       price: product.discountPrice ?? product.basePrice,
-      quantity: 1,
       image: product.images?.[0],
     });
     router.push("/#catalog");
