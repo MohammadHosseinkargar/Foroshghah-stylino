@@ -32,10 +32,9 @@ type Product = {
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [orderMessage, setOrderMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [quickView, setQuickView] = useState<DisplayProduct | null>(null);
-  const { addItem, items, total, removeItem, clear } = useCart();
+  const { addItem, items, total, removeItem } = useCart();
   const { token, user } = useAuth();
   const router = useRouter();
 
@@ -102,32 +101,17 @@ export default function Home() {
     });
   };
 
-  const placeOrder = async () => {
+  const goToCheckout = () => {
     setError(null);
-    setOrderMessage(null);
-    if (!token) {
-      router.push("/auth");
-      return;
-    }
     if (items.length === 0) {
       setError("سبد خرید خالی است.");
       return;
     }
-    try {
-      const order = await apiRequest<{ id: number }>(
-        "/orders",
-        {
-          method: "POST",
-          body: JSON.stringify({ items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })) }),
-        },
-        token
-      );
-      await apiRequest(`/orders/${order.id}/pay`, { method: "POST" }, token);
-      setOrderMessage("سفارش ثبت و پرداخت شد. کمیسیون‌های ارجاع محاسبه گردید.");
-      clear();
-    } catch (e: any) {
-      setError(e.message || "خطا در ثبت سفارش");
+    if (!token) {
+      router.push("/auth?redirect=/checkout");
+      return;
     }
+    router.push("/checkout");
   };
 
   return (
@@ -220,13 +204,12 @@ export default function Home() {
               </div>
             ))}
             {error && <p className="text-sm text-red-600">{error}</p>}
-            {orderMessage && <p className="text-sm text-emerald-700">{orderMessage}</p>}
             <div className="flex justify-end gap-3">
               <button
-                onClick={placeOrder}
+                onClick={goToCheckout}
                 className="rounded-full bg-brand-600 px-5 py-3 text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700"
               >
-                ثبت سفارش و پرداخت
+                ادامه خرید و پرداخت
               </button>
               {user && (
                 <button
