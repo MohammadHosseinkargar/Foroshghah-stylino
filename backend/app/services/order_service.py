@@ -51,7 +51,13 @@ async def create_order(prisma: Prisma, customer_id: int, items: list[OrderItemCr
     return order, created_items
 
 
-async def mark_order_paid(prisma: Prisma, order_id: int, requested_by: int, is_admin: bool = False):
+async def mark_order_paid(
+    prisma: Prisma,
+    order_id: int,
+    requested_by: int,
+    is_admin: bool = False,
+    payment_update: dict | None = None,
+):
     order = await prisma.order.find_unique(where={"id": order_id})
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="سفارش یافت نشد")
@@ -61,9 +67,12 @@ async def mark_order_paid(prisma: Prisma, order_id: int, requested_by: int, is_a
     if order.paymentStatus == "PAID":
         return order
 
+    data = {"paymentStatus": "PAID", "status": "PAID"}
+    if payment_update:
+        data.update(payment_update)
     updated = await prisma.order.update(
         where={"id": order_id},
-        data={"paymentStatus": "PAID", "status": "PAID"},
+        data=data,
     )
 
     await create_commissions(prisma, buyer_id=order.customerId, order_id=order.id, amount=order.totalAmount)

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Heart, Search, ShoppingBag, UserRound } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { cn } from "../lib/utils";
+import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
 
 const links = [
@@ -18,7 +19,9 @@ export function NavBar() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { items } = useCart();
   const [scrolled, setScrolled] = useState(false);
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
   const handleLogout = () => {
     logout();
@@ -63,12 +66,16 @@ export function NavBar() {
               <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-brand-600 text-[10px] font-bold text-white">1</span>
             </button>
             <Link
-              href="/orders"
+              href="/checkout"
               className="relative rounded-full bg-brand-50 p-2 transition hover:-translate-y-0.5 hover:bg-brand-100"
               title="سبد خرید / سفارش‌ها"
             >
               <ShoppingBag className="h-5 w-5" />
-              <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-brand-600 text-[10px] font-bold text-white">2</span>
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 min-h-4 min-w-4 rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
+                  {cartCount}
+                </span>
+              )}
             </Link>
             <Link
               href="/auth"
