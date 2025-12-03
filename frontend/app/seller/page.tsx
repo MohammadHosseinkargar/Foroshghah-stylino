@@ -41,6 +41,34 @@ type Commission = {
 type Stats = { revenue: number; monthlyOrders: number; totalOrders: number };
 type Category = { id: number; name: string; slug: string };
 
+type ParsedVariants =
+  | { sizes: string[]; colors: string[]; images: string[] }
+  | { error: string };
+
+function parseVariantCsv(csv: string): ParsedVariants {
+  const lines = csv
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  if (lines.length === 0) {
+    return { error: "لطفاً CSV سایز/رنگ/تصویر را وارد کنید (هر خط: size,color,imageUrl)" };
+  }
+  const sizes: string[] = [];
+  const colors: string[] = [];
+  const images: string[] = [];
+  for (const line of lines) {
+    const [size, color, image] = line.split(",").map((p) => p.trim());
+    if (!size || !color) {
+      return { error: "فرمت CSV نامعتبر است. هر خط باید حداقل شامل size,color باشد." };
+    }
+    sizes.push(size);
+    colors.push(color);
+    if (image) images.push(image);
+  }
+  const uniq = (arr: string[]) => Array.from(new Set(arr));
+  return { sizes: uniq(sizes), colors: uniq(colors), images: uniq(images) };
+}
+
 export default function SellerDashboard() {
   const { user, token, loading } = useAuth();
   const router = useRouter();
@@ -50,8 +78,10 @@ export default function SellerDashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [dataLoading, setDataLoading] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [updating, setUpdating] = useState(false);
+  const [rowSaving, setRowSaving] = useState<Record<number, boolean>>({});
 
   const [newProduct, setNewProduct] = useState({
     name: "",
@@ -60,17 +90,47 @@ export default function SellerDashboard() {
     discountPrice: "",
     categoryId: "",
     brand: "Stylino",
-    colors: "",
-    sizes: "",
-    images: "",
+    variantsCsv: "",
   });
 
-  const [updateProductForm, setUpdateProductForm] = useState({
-    productId: "",
-    basePrice: "",
-    discountPrice: "",
-    isActive: "true",
-  });
+  const [priceEdits, setPriceEdits] = useState<Record<number, string>>({});
+  const [activeEdits, setActiveEdits] = useState<Record<number, boolean>>({});
+
+  const syncEditFields = (list: Product[]) => {
+    const prices: Record<number, string> = {};
+    const actives: Record<number, boolean> = {};
+    list.forEach((p) => {
+      prices[p.id] = String(p.discountPrice ?? p.basePrice);
+      actives[p.id] = p.isActive;
+    });
+    setPriceEdits(prices);
+    setActiveEdits(actives);
+  };
+
+  const loadData = async () => {
+    if (!token) return;
+    setDataLoading(true);
+    setError(null);
+    try {
+      const [p, o, c, s, cats] = await Promise.all([
+        apiRequest<Product[]>("/seller/products", undefined, token),
+        apiRequest<SellerOrder[]>("/seller/orders", undefined, token),
+        apiRequest<Commission[]>("/seller/commissions", undefined, token),
+        apiRequest<Stats>("/seller/stats", undefined, token),
+        apiRequest<Category[]>("/products/categories"),
+      ]);
+      setProducts(p);
+      syncEditFields(p);
+      setOrders(o);
+      setCommissions(c);
+      setStats(s);
+      setCategories(cats);
+    } catch (e: any) {
+      setError(e.message || "خطا در بارگذاری داشبورد فروشنده");
+    } finally {
+      setDataLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -78,25 +138,7 @@ export default function SellerDashboard() {
       router.push("/auth?redirect=/seller");
       return;
     }
-    const load = async () => {
-      try {
-        const [p, o, c, s, cats] = await Promise.all([
-          apiRequest<Product[]>("/seller/products", undefined, token),
-          apiRequest<SellerOrder[]>("/seller/orders", undefined, token),
-          apiRequest<Commission[]>("/seller/commissions", undefined, token),
-          apiRequest<Stats>("/seller/stats", undefined, token),
-          apiRequest<Category[]>("/products/categories"),
-        ]);
-        setProducts(p);
-        setOrders(o);
-        setCommissions(c);
-        setStats(s);
-        setCategories(cats);
-      } catch (e: any) {
-        setError(e.message || "خطا در دریافت داده‌های فروشنده");
-      }
-    };
-    load();
+    loadData();
   }, [loading, token, user, router]);
 
   const handleCreateProduct = async (e: React.FormEvent) => {
@@ -104,7 +146,18 @@ export default function SellerDashboard() {
     if (!token) return;
     setCreating(true);
     setError(null);
+    setStatusMessage(null);
     try {
+      const basePrice = Number(newProduct.basePrice);
+      if (Number.isNaN(basePrice) || basePrice <= 0) {
+        setError("قیمت پایه نامعتبر است.");
+        return;
+      }
+      const parsed = parseVariantCsv(newProduct.variantsCsv);
+      if ("error" in parsed) {
+        setError(parsed.error);
+        return;
+      }
       await apiRequest(
         "/seller/products",
         {
@@ -112,29 +165,19 @@ export default function SellerDashboard() {
           body: JSON.stringify({
             name: newProduct.name,
             description: newProduct.description,
-            basePrice: Number(newProduct.basePrice),
+            basePrice,
             discountPrice: newProduct.discountPrice ? Number(newProduct.discountPrice) : null,
             categoryId: Number(newProduct.categoryId),
             brand: newProduct.brand,
-            colors: newProduct.colors
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean),
-            sizes: newProduct.sizes
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean),
-            images: newProduct.images
-              .split(",")
-              .map((s) => s.trim())
-              .filter(Boolean),
+            colors: parsed.colors,
+            sizes: parsed.sizes,
+            images: parsed.images,
             isActive: true,
           }),
         },
         token
       );
-      const refreshed = await apiRequest<Product[]>("/seller/products", undefined, token);
-      setProducts(refreshed);
+      await loadData();
       setNewProduct({
         name: "",
         description: "",
@@ -142,51 +185,60 @@ export default function SellerDashboard() {
         discountPrice: "",
         categoryId: "",
         brand: "Stylino",
-        colors: "",
-        sizes: "",
-        images: "",
+        variantsCsv: "",
       });
+      setStatusMessage("محصول با موفقیت ایجاد شد.");
     } catch (e: any) {
-      setError(e.message || "خطا در ساخت محصول");
+      setError(e.message || "خطا در ایجاد محصول");
     } finally {
       setCreating(false);
     }
   };
 
-  const handleUpdateProduct = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!token || !updateProductForm.productId) return;
-    setUpdating(true);
+  const handleInlineUpdate = async (productId: number) => {
+    if (!token) return;
+    const priceValue = priceEdits[productId];
+    const price = Number(priceValue);
+    if (Number.isNaN(price) || price <= 0) {
+      setError("قیمت نامعتبر است.");
+      return;
+    }
+    setRowSaving((prev) => ({ ...prev, [productId]: true }));
     setError(null);
+    setStatusMessage(null);
     try {
       await apiRequest(
-        `/seller/products/${updateProductForm.productId}`,
+        `/seller/products/${productId}`,
         {
           method: "PUT",
           body: JSON.stringify({
-            basePrice: updateProductForm.basePrice ? Number(updateProductForm.basePrice) : undefined,
-            discountPrice: updateProductForm.discountPrice ? Number(updateProductForm.discountPrice) : undefined,
-            isActive: updateProductForm.isActive === "true",
+            basePrice: price,
+            discountPrice: price,
+            isActive: activeEdits[productId],
           }),
         },
         token
       );
-      const refreshed = await apiRequest<Product[]>("/seller/products", undefined, token);
-      setProducts(refreshed);
+      await loadData();
+      setStatusMessage("محصول به‌روزرسانی شد.");
     } catch (e: any) {
-      setError(e.message || "خطا در ویرایش محصول");
+      setError(e.message || "به‌روزرسانی محصول ناموفق بود.");
     } finally {
-      setUpdating(false);
+      setRowSaving((prev) => ({ ...prev, [productId]: false }));
     }
   };
 
   const handleDelete = async (productId: number) => {
     if (!token) return;
+    if (!window.confirm("این محصول حذف شود؟")) return;
+    setStatusMessage(null);
+    setError(null);
     try {
       await apiRequest(`/seller/products/${productId}`, { method: "DELETE" }, token);
       setProducts((prev) => prev.filter((p) => p.id !== productId));
+      setStatusMessage("محصول حذف شد.");
     } catch (e: any) {
-      setError(e.message || "حذف محصول ناموفق بود");
+      setError(e.message || "حذف محصول ناموفق بود.");
     }
   };
 
@@ -199,10 +251,11 @@ export default function SellerDashboard() {
       <div className="glass-card border border-brand-50 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="badge">پنل فروشندگان استایلینو</p>
-            <h1 className="text-2xl font-bold text-brand-900">سلام {user?.name}</h1>
-            <p className="text-sm text-gray-600">محصولات خود را مدیریت کنید و کمیسیون‌های ارجاع را مشاهده نمایید.</p>
+            <p className="badge">پنل فروشنده</p>
+            <h1 className="text-2xl font-bold text-brand-900">{user?.name}</h1>
+            <p className="text-sm text-gray-600">مدیریت محصولات، سفارش‌ها و کارمزدها از یک جا</p>
           </div>
+          {statusMessage && <span className="text-sm text-emerald-700">{statusMessage}</span>}
         </div>
       </div>
 
@@ -216,7 +269,7 @@ export default function SellerDashboard() {
           <p className="text-3xl font-extrabold text-brand-900">{stats?.totalOrders ?? 0}</p>
         </div>
         <div className="glass-card border border-brand-50 p-4">
-          <p className="text-sm text-gray-600">درآمد از فروش محصولات</p>
+          <p className="text-sm text-gray-600">مجموع درآمد</p>
           <p className="text-3xl font-extrabold text-brand-900">{(stats?.revenue ?? 0).toLocaleString()} تومان</p>
         </div>
       </div>
@@ -228,35 +281,67 @@ export default function SellerDashboard() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-brand-900">محصولات</h2>
           </div>
+          {dataLoading && <p className="text-sm text-gray-600">در حال بارگذاری محصولات...</p>}
           <div className="mt-4 overflow-hidden rounded-2xl border border-brand-50 bg-white">
             <table className="w-full text-right text-sm">
               <thead className="bg-brand-50/70 text-xs font-semibold text-brand-800">
                 <tr>
                   <th className="px-4 py-3">نام محصول</th>
-                  <th className="px-4 py-3">قیمت</th>
-                  <th className="px-4 py-3">دسته</th>
+                  <th className="px-4 py-3">قیمت (ویرایش)</th>
+                  <th className="px-4 py-3">دسته‌بندی</th>
                   <th className="px-4 py-3">وضعیت</th>
-                  <th className="px-4 py-3">اقدام</th>
+                  <th className="px-4 py-3">اقدامات</th>
+                  <th className="px-4 py-3">قیمت جاری</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {products.map((p) => (
-                  <tr key={p.id} className="hover:bg-brand-50/40">
-                    <td className="px-4 py-3 font-semibold text-brand-900">{p.name}</td>
-                    <td className="px-4 py-3 text-gray-700">
-                      {(p.discountPrice ?? p.basePrice).toLocaleString()} تومان
-                    </td>
-                    <td className="px-4 py-3 text-gray-700">{p.categoryName || "-"}</td>
-                    <td className="px-4 py-3">
-                      <span className="badge">{p.isActive ? "فعال" : "غیرفعال"}</span>
-                    </td>
-                    <td className="px-4 py-3 space-x-2 space-x-reverse">
-                      <button className="text-xs text-red-500" onClick={() => handleDelete(p.id)}>
-                        حذف
-                      </button>
+                {products.length === 0 ? (
+                  <tr>
+                    <td className="px-4 py-4 text-sm text-gray-600" colSpan={6}>
+                      محصولی ثبت نشده است.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  products.map((p) => (
+                    <tr key={p.id} className="hover:bg-brand-50/40">
+                      <td className="px-4 py-3 font-semibold text-brand-900">{p.name}</td>
+                      <td className="px-4 py-3 text-gray-700">
+                        <input
+                          type="number"
+                          className="w-28 rounded-lg border border-brand-100 px-2 py-1 text-sm"
+                          value={priceEdits[p.id] ?? ""}
+                          onChange={(e) => setPriceEdits((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                        />
+                      </td>
+                      <td className="px-4 py-3 text-gray-700">{p.categoryName || "-"}</td>
+                      <td className="px-4 py-3">
+                        <label className="flex items-center gap-2 text-xs">
+                          <input
+                            type="checkbox"
+                            checked={!!activeEdits[p.id]}
+                            onChange={(e) => setActiveEdits((prev) => ({ ...prev, [p.id]: e.target.checked }))}
+                          />
+                          <span className="badge">{activeEdits[p.id] ? "فعال" : "غیرفعال"}</span>
+                        </label>
+                      </td>
+                      <td className="px-4 py-3 space-x-2 space-x-reverse">
+                        <button
+                          className="rounded-full bg-brand-600 px-3 py-1 text-xs text-white hover:bg-brand-700 disabled:opacity-60"
+                          onClick={() => handleInlineUpdate(p.id)}
+                          disabled={rowSaving[p.id]}
+                        >
+                          {rowSaving[p.id] ? "..." : "ذخیره"}
+                        </button>
+                        <button className="text-xs text-red-500" onClick={() => handleDelete(p.id)}>
+                          حذف
+                        </button>
+                      </td>
+                      <td className="px-4 py-3 text-gray-600">
+                        {(p.discountPrice ?? p.basePrice).toLocaleString()} تومان
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
@@ -276,7 +361,7 @@ export default function SellerDashboard() {
               value={newProduct.description}
               onChange={(e) => setNewProduct({ ...newProduct, description: e.target.value })}
               className="w-full rounded-xl border border-brand-100 px-3 py-2"
-              placeholder="توضیحات کوتاه"
+              placeholder="توضیحات"
             />
             <div className="grid grid-cols-2 gap-2">
               <input
@@ -285,7 +370,7 @@ export default function SellerDashboard() {
                 value={newProduct.basePrice}
                 onChange={(e) => setNewProduct({ ...newProduct, basePrice: e.target.value })}
                 className="w-full rounded-xl border border-brand-100 px-3 py-2"
-                placeholder="قیمت پایه"
+                placeholder="قیمت"
               />
               <input
                 type="number"
@@ -301,7 +386,7 @@ export default function SellerDashboard() {
               onChange={(e) => setNewProduct({ ...newProduct, categoryId: e.target.value })}
               className="w-full rounded-xl border border-brand-100 px-3 py-2"
             >
-              <option value="">دسته‌بندی</option>
+              <option value="">انتخاب دسته‌بندی</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -314,86 +399,28 @@ export default function SellerDashboard() {
               className="w-full rounded-xl border border-brand-100 px-3 py-2"
               placeholder="برند"
             />
-            <input
-              value={newProduct.colors}
-              onChange={(e) => setNewProduct({ ...newProduct, colors: e.target.value })}
+            <textarea
+              required
+              value={newProduct.variantsCsv}
+              onChange={(e) => setNewProduct({ ...newProduct, variantsCsv: e.target.value })}
               className="w-full rounded-xl border border-brand-100 px-3 py-2"
-              placeholder="رنگ‌ها (با , جدا کنید)"
-            />
-            <input
-              value={newProduct.sizes}
-              onChange={(e) => setNewProduct({ ...newProduct, sizes: e.target.value })}
-              className="w-full rounded-xl border border-brand-100 px-3 py-2"
-              placeholder="سایزها (با , جدا کنید)"
-            />
-            <input
-              value={newProduct.images}
-              onChange={(e) => setNewProduct({ ...newProduct, images: e.target.value })}
-              className="w-full rounded-xl border border-brand-100 px-3 py-2"
-              placeholder="لینک تصاویر (با , جدا کنید)"
+              placeholder="CSV سایز/رنگ/تصویر: هر خط size,color,imageUrl (مثال: M,قرمز,https://...)"
             />
             <button
               disabled={creating}
               className="w-full rounded-xl bg-brand-600 px-4 py-3 text-white transition hover:-translate-y-0.5 hover:bg-brand-700 disabled:opacity-60"
             >
-              {creating ? "در حال ذخیره..." : "ثبت محصول"}
+              {creating ? "در حال ثبت..." : "ثبت محصول"}
             </button>
           </form>
-
-          <div className="mt-6 border-t border-gray-100 pt-4">
-            <h4 className="mb-2 text-sm font-semibold text-brand-900">ویرایش قیمت/وضعیت</h4>
-            <form className="space-y-2 text-sm" onSubmit={handleUpdateProduct}>
-              <select
-                required
-                value={updateProductForm.productId}
-                onChange={(e) => setUpdateProductForm({ ...updateProductForm, productId: e.target.value })}
-                className="w-full rounded-xl border border-brand-100 px-3 py-2"
-              >
-                <option value="">انتخاب محصول</option>
-                {products.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
-              <input
-                type="number"
-                value={updateProductForm.basePrice}
-                onChange={(e) => setUpdateProductForm({ ...updateProductForm, basePrice: e.target.value })}
-                className="w-full rounded-xl border border-brand-100 px-3 py-2"
-                placeholder="قیمت پایه جدید"
-              />
-              <input
-                type="number"
-                value={updateProductForm.discountPrice}
-                onChange={(e) => setUpdateProductForm({ ...updateProductForm, discountPrice: e.target.value })}
-                className="w-full rounded-xl border border-brand-100 px-3 py-2"
-                placeholder="قیمت تخفیف"
-              />
-              <select
-                value={updateProductForm.isActive}
-                onChange={(e) => setUpdateProductForm({ ...updateProductForm, isActive: e.target.value })}
-                className="w-full rounded-xl border border-brand-100 px-3 py-2"
-              >
-                <option value="true">فعال</option>
-                <option value="false">غیرفعال</option>
-              </select>
-              <button
-                disabled={updating}
-                className="w-full rounded-xl bg-gray-800 px-4 py-3 text-white transition hover:-translate-y-0.5 hover:bg-gray-900 disabled:opacity-60"
-              >
-                {updating ? "در حال ذخیره..." : "به‌روزرسانی"}
-              </button>
-            </form>
-          </div>
         </div>
       </section>
 
       <section className="grid gap-6 lg:grid-cols-2">
         <div className="glass-card border border-brand-50 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-brand-900">سفارش‌های حاوی محصولات شما</h2>
-            <span className="badge">واقعی</span>
+            <h2 className="text-lg font-semibold text-brand-900">سفارش‌های اخیر محصولات شما</h2>
+            <span className="badge">به‌روز</span>
           </div>
           {orders.length === 0 ? (
             <p className="text-sm text-gray-600">سفارشی ثبت نشده است.</p>
@@ -422,11 +449,11 @@ export default function SellerDashboard() {
         </div>
         <div className="glass-card border border-brand-50 p-4">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-brand-900">کمیسیون‌های ارجاعی من</h2>
-            <span className="badge">سطح ۱ و ۲</span>
+            <h2 className="text-lg font-semibold text-brand-900">کمیسیون‌های دریافتی</h2>
+            <span className="badge">به‌روز</span>
           </div>
           {commissions.length === 0 ? (
-            <p className="text-sm text-gray-600">کمیسیونی دریافت نشده است.</p>
+            <p className="text-sm text-gray-600">کمیسیونی ثبت نشده است.</p>
           ) : (
             <div className="space-y-3">
               {commissions.map((c) => (
