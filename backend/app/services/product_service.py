@@ -1,22 +1,30 @@
+import json
+
 from fastapi import HTTPException, status
-from prisma import Prisma
+from prisma import Prisma, fields
 
 from ..schemas.product import ProductCreate, ProductUpdate
 
 
+def _json_list(value):
+    """Ensure JSON columns get Prisma Json wrapper with a plain list."""
+    return fields.Json(json.loads(json.dumps(list(value or []))))
+
+
 async def create_product(prisma: Prisma, seller_id: int, data: ProductCreate):
+    # Set both scalar FKs and relation connects to satisfy the client schema.
     return await prisma.product.create(
         data={
-            "sellerId": seller_id,
+            "seller": {"connect": {"id": seller_id}},
+            "category": {"connect": {"id": data.categoryId}},
             "name": data.name,
             "description": data.description,
             "basePrice": data.basePrice,
             "discountPrice": data.discountPrice,
-            "categoryId": data.categoryId,
             "brand": data.brand,
-            "colors": data.colors,
-            "sizes": data.sizes,
-            "images": data.images,
+            "colors": _json_list(data.colors),
+            "sizes": _json_list(data.sizes),
+            "images": _json_list(data.images),
             "isActive": data.isActive,
         }
     )

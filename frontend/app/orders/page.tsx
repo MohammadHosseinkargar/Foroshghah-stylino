@@ -45,6 +45,10 @@ export default function OrdersPage() {
       router.push("/auth?redirect=/orders");
       return;
     }
+    if (user.role !== "CUSTOMER") {
+      router.push("/");
+      return;
+    }
     apiRequest<Order[]>("/orders/my", undefined, token)
       .then(setOrders)
       .catch((e) => setError(e.message));

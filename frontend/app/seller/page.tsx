@@ -41,34 +41,6 @@ type Commission = {
 type Stats = { revenue: number; monthlyOrders: number; totalOrders: number };
 type Category = { id: number; name: string; slug: string };
 
-type ParsedVariants =
-  | { sizes: string[]; colors: string[]; images: string[] }
-  | { error: string };
-
-function parseVariantCsv(csv: string): ParsedVariants {
-  const lines = csv
-    .split(/\r?\n/)
-    .map((l) => l.trim())
-    .filter(Boolean);
-  if (lines.length === 0) {
-    return { error: "لطفاً CSV سایز/رنگ/تصویر را وارد کنید (هر خط: size,color,imageUrl)" };
-  }
-  const sizes: string[] = [];
-  const colors: string[] = [];
-  const images: string[] = [];
-  for (const line of lines) {
-    const [size, color, image] = line.split(",").map((p) => p.trim());
-    if (!size || !color) {
-      return { error: "فرمت CSV نامعتبر است. هر خط باید حداقل شامل size,color باشد." };
-    }
-    sizes.push(size);
-    colors.push(color);
-    if (image) images.push(image);
-  }
-  const uniq = (arr: string[]) => Array.from(new Set(arr));
-  return { sizes: uniq(sizes), colors: uniq(colors), images: uniq(images) };
-}
-
 export default function SellerDashboard() {
   const { user, token, loading } = useAuth();
   const router = useRouter();
@@ -90,7 +62,12 @@ export default function SellerDashboard() {
     discountPrice: "",
     categoryId: "",
     brand: "Stylino",
-    variantsCsv: "",
+    colorInput: "",
+    sizeInput: "",
+    imageUrlInput: "",
+    colors: [] as string[],
+    sizes: [] as string[],
+    images: [] as string[],
   });
 
   const [priceEdits, setPriceEdits] = useState<Record<number, string>>({});
@@ -153,9 +130,21 @@ export default function SellerDashboard() {
         setError("قیمت پایه نامعتبر است.");
         return;
       }
-      const parsed = parseVariantCsv(newProduct.variantsCsv);
-      if ("error" in parsed) {
-        setError(parsed.error);
+      const discountPrice = newProduct.discountPrice ? Number(newProduct.discountPrice) : null;
+      if (newProduct.discountPrice && (Number.isNaN(discountPrice) || discountPrice <= 0)) {
+        setError("قیمت تخفیف نامعتبر است.");
+        return;
+      }
+      if (newProduct.colors.length === 0) {
+        setError("حداقل یک رنگ وارد کنید.");
+        return;
+      }
+      if (newProduct.sizes.length === 0) {
+        setError("حداقل یک سایز وارد کنید.");
+        return;
+      }
+      if (newProduct.images.length === 0) {
+        setError("حداقل یک تصویر اضافه کنید.");
         return;
       }
       await apiRequest(
@@ -166,12 +155,12 @@ export default function SellerDashboard() {
             name: newProduct.name,
             description: newProduct.description,
             basePrice,
-            discountPrice: newProduct.discountPrice ? Number(newProduct.discountPrice) : null,
+            discountPrice,
             categoryId: Number(newProduct.categoryId),
             brand: newProduct.brand,
-            colors: parsed.colors,
-            sizes: parsed.sizes,
-            images: parsed.images,
+            colors: newProduct.colors,
+            sizes: newProduct.sizes,
+            images: newProduct.images,
             isActive: true,
           }),
         },
@@ -185,7 +174,12 @@ export default function SellerDashboard() {
         discountPrice: "",
         categoryId: "",
         brand: "Stylino",
-        variantsCsv: "",
+        colorInput: "",
+        sizeInput: "",
+        imageUrlInput: "",
+        colors: [],
+        sizes: [],
+        images: [],
       });
       setStatusMessage("محصول با موفقیت ایجاد شد.");
     } catch (e: any) {
@@ -283,7 +277,8 @@ export default function SellerDashboard() {
           </div>
           {dataLoading && <p className="text-sm text-gray-600">در حال بارگذاری محصولات...</p>}
           <div className="mt-4 overflow-hidden rounded-2xl border border-brand-50 bg-white">
-            <table className="w-full text-right text-sm">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[720px] text-right text-sm">
               <thead className="bg-brand-50/70 text-xs font-semibold text-brand-800">
                 <tr>
                   <th className="px-4 py-3">نام محصول</th>
@@ -343,7 +338,8 @@ export default function SellerDashboard() {
                   ))
                 )}
               </tbody>
-            </table>
+              </table>
+            </div>
           </div>
         </div>
         <div className="glass-card border border-brand-50 p-4">
@@ -363,7 +359,7 @@ export default function SellerDashboard() {
               className="w-full rounded-xl border border-brand-100 px-3 py-2"
               placeholder="توضیحات"
             />
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               <input
                 required
                 type="number"
@@ -399,13 +395,165 @@ export default function SellerDashboard() {
               className="w-full rounded-xl border border-brand-100 px-3 py-2"
               placeholder="برند"
             />
-            <textarea
-              required
-              value={newProduct.variantsCsv}
-              onChange={(e) => setNewProduct({ ...newProduct, variantsCsv: e.target.value })}
-              className="w-full rounded-xl border border-brand-100 px-3 py-2"
-              placeholder="CSV سایز/رنگ/تصویر: هر خط size,color,imageUrl (مثال: M,قرمز,https://...)"
-            />
+            <div className="grid gap-2 rounded-xl border border-brand-100 p-3">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={newProduct.colorInput}
+                  onChange={(e) => setNewProduct({ ...newProduct, colorInput: e.target.value })}
+                  className="flex-1 rounded-lg border border-brand-100 px-3 py-2"
+                  placeholder="رنگ (مثال: قرمز)"
+                />
+                <button
+                  type="button"
+                  className="rounded-lg bg-brand-600 px-3 py-2 text-white"
+                  onClick={() => {
+                    if (!newProduct.colorInput.trim()) return;
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      colors: Array.from(new Set([...prev.colors, prev.colorInput.trim()])),
+                      colorInput: "",
+                    }));
+                  }}
+                >
+                  افزودن رنگ
+                </button>
+              </div>
+              {newProduct.colors.length > 0 && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {newProduct.colors.map((c) => (
+                    <span
+                      key={c}
+                      className="flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-800"
+                    >
+                      {c}
+                      <button
+                        type="button"
+                        className="text-red-500"
+                        onClick={() =>
+                          setNewProduct((prev) => ({ ...prev, colors: prev.colors.filter((x) => x !== c) }))
+                        }
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid gap-2 rounded-xl border border-brand-100 p-3">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={newProduct.sizeInput}
+                  onChange={(e) => setNewProduct({ ...newProduct, sizeInput: e.target.value })}
+                  className="flex-1 rounded-lg border border-brand-100 px-3 py-2"
+                  placeholder="سایز (مثال: M)"
+                />
+                <button
+                  type="button"
+                  className="rounded-lg bg-brand-600 px-3 py-2 text-white"
+                  onClick={() => {
+                    if (!newProduct.sizeInput.trim()) return;
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      sizes: Array.from(new Set([...prev.sizes, prev.sizeInput.trim()])),
+                      sizeInput: "",
+                    }));
+                  }}
+                >
+                  افزودن سایز
+                </button>
+              </div>
+              {newProduct.sizes.length > 0 && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {newProduct.sizes.map((s) => (
+                    <span
+                      key={s}
+                      className="flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-800"
+                    >
+                      {s}
+                      <button
+                        type="button"
+                        className="text-red-500"
+                        onClick={() =>
+                          setNewProduct((prev) => ({ ...prev, sizes: prev.sizes.filter((x) => x !== s) }))
+                        }
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid gap-2 rounded-xl border border-brand-100 p-3">
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  value={newProduct.imageUrlInput}
+                  onChange={(e) => setNewProduct({ ...newProduct, imageUrlInput: e.target.value })}
+                  className="flex-1 rounded-lg border border-brand-100 px-3 py-2"
+                  placeholder="لینک تصویر (https://...)"
+                />
+                <button
+                  type="button"
+                  className="rounded-lg bg-brand-600 px-3 py-2 text-white"
+                  onClick={() => {
+                    if (!newProduct.imageUrlInput.trim()) return;
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      images: Array.from(new Set([...prev.images, prev.imageUrlInput.trim()])),
+                      imageUrlInput: "",
+                    }));
+                  }}
+                >
+                  افزودن لینک
+                </button>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="flex-1 text-xs"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    const dataUrl: string = await new Promise((resolve, reject) => {
+                      const reader = new FileReader();
+                      reader.onload = () => resolve(reader.result as string);
+                      reader.onerror = () => reject(reader.error);
+                      reader.readAsDataURL(file);
+                    });
+                    setNewProduct((prev) => ({
+                      ...prev,
+                      images: Array.from(new Set([...prev.images, dataUrl])),
+                    }));
+                    e.target.value = "";
+                  }}
+                />
+              </div>
+              {newProduct.images.length > 0 && (
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {newProduct.images.map((img) => (
+                    <span
+                      key={img}
+                      className="flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 text-brand-800"
+                    >
+                      {img.startsWith("data:") ? "آپلود محلی" : img}
+                      <button
+                        type="button"
+                        className="text-red-500"
+                        onClick={() =>
+                          setNewProduct((prev) => ({ ...prev, images: prev.images.filter((x) => x !== img) }))
+                        }
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
             <button
               disabled={creating}
               className="w-full rounded-xl bg-brand-600 px-4 py-3 text-white transition hover:-translate-y-0.5 hover:bg-brand-700 disabled:opacity-60"

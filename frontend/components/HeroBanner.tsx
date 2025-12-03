@@ -18,13 +18,15 @@ export function HeroBanner({ title, subtitle, ctaLabel, pill = "حراج تاب�
           style={image ? { backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" } : {}}
         />
       </div>
-      <div className="relative z-10 grid gap-6 px-6 py-10 md:grid-cols-2 md:items-center md:px-10 md:py-14 animate-fade-in">
+      <div className="relative z-10 grid gap-6 px-4 py-8 sm:px-6 sm:py-10 md:grid-cols-2 md:items-center md:px-10 md:py-14 animate-fade-in">
         <div className="space-y-4">
           <span className="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-2 text-xs font-semibold text-brand-800 shadow-sm">
             {pill}
           </span>
-          <h1 className="text-3xl font-extrabold leading-tight text-brand-900 md:text-4xl lg:text-5xl">{title}</h1>
-          <p className="text-lg text-brand-800">{subtitle}</p>
+          <h1 className="text-2xl font-extrabold leading-tight text-brand-900 sm:text-3xl md:text-4xl lg:text-5xl">
+            {title}
+          </h1>
+          <p className="text-base text-brand-800 sm:text-lg">{subtitle}</p>
           <Link
             href="#catalog"
             className="inline-flex w-fit items-center gap-2 rounded-full bg-brand-600 px-6 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700"

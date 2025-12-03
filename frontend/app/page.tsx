@@ -108,6 +108,10 @@ export default function Home() {
       router.push("/auth");
       return;
     }
+    if (user && user.role !== "CUSTOMER") {
+      setError("ثبت سفارش فقط توسط مشتری انجام می‌شود.");
+      return;
+    }
     if (isEmpty || getTotalCount() === 0) {
       setError("Your cart is empty.");
       return;
@@ -132,7 +136,7 @@ export default function Home() {
   const totalPrice = getTotalPrice();
 
   return (
-    <div className="space-y-12 bg-[radial-gradient(circle_at_10%_20%,#fff7fb,transparent_25%),radial-gradient(circle_at_90%_10%,#fef2f8,transparent_25%)]">
+    <div className="space-y-8 bg-[radial-gradient(circle_at_10%_20%,#fff7fb,transparent_25%),radial-gradient(circle_at_90%_10%,#fef2f8,transparent_25%)] sm:space-y-10 lg:space-y-12">
       <HeroBanner
         title="حراج تابستانه تا ۳۰٪ تخفیف"
         subtitle="منتخب‌ترین استایل‌های تابستانی با ارسال سریع و ضمانت اصالت کالا"
@@ -189,7 +193,7 @@ export default function Home() {
         </>
       )}
 
-      <section className="glass-card border border-brand-50 p-6 md:sticky md:top-28">
+      <section className="glass-card border border-brand-50 p-4 sm:p-6 md:sticky md:top-28">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="badge">سبد خرید</p>
@@ -212,7 +216,7 @@ export default function Home() {
                 <div>
                   <p className="font-semibold text-brand-900">{i.name}</p>
                   <p className="text-xs text-gray-600">
-                    {i.quantity} O1O_O_ A- {i.price.toLocaleString()} = {(i.price * i.quantity).toLocaleString()} O?U^U.OU+
+                    {i.quantity} عدد × {i.price.toLocaleString()} = {(i.price * i.quantity).toLocaleString()} تومان
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -230,24 +234,24 @@ export default function Home() {
                     +
                   </button>
                   <button className="text-sm text-red-500" onClick={() => removeItem(i.productId)}>
-                    O-O?U?
+                    حذف
                   </button>
                 </div>
               </div>
             ))}
             {error && <p className="text-sm text-red-600">{error}</p>}
             {orderMessage && <p className="text-sm text-emerald-700">{orderMessage}</p>}
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:justify-end">
               <button
                 onClick={placeOrder}
-                className="rounded-full bg-brand-600 px-5 py-3 text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700"
+                className="w-full rounded-full bg-brand-600 px-5 py-3 text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700 sm:w-auto"
               >
                 ثبت سفارش و پرداخت
               </button>
               {user && (
                 <button
                   onClick={() => router.push("/orders")}
-                  className="rounded-full border border-brand-200 px-5 py-3 text-brand-800 transition hover:bg-brand-50"
+                  className="w-full rounded-full border border-brand-200 px-5 py-3 text-brand-800 transition hover:bg-brand-50 sm:w-auto"
                 >
                   مشاهده سفارش‌های من
                 </button>

@@ -3,6 +3,7 @@ import string
 from fastapi import HTTPException, status
 
 from prisma import Prisma
+from prisma.errors import UniqueViolationError
 from prisma.models import User
 
 from ..core.security import get_password_hash, verify_password, create_access_token
@@ -25,6 +26,10 @@ async def register_user(prisma: Prisma, name: str, email: str, password: str, ph
     existing = await prisma.user.find_unique(where={"email": email})
     if existing:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ایمیل قبلا ثبت شده است")
+    if phone:
+        existing_phone = await prisma.user.find_unique(where={"phone": phone})
+        if existing_phone:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="شماره موبایل قبلا ثبت شده است")
 
     referred_by_id = None
     if referral_code:
@@ -36,18 +41,22 @@ async def register_user(prisma: Prisma, name: str, email: str, password: str, ph
     code = await generate_unique_referral(prisma)
     password_hash = get_password_hash(password)
 
-    user = await prisma.user.create(
-        data={
-            "name": name,
-            "email": email,
-            "phone": phone,
-            "passwordHash": password_hash,
-            "role": "CUSTOMER",
-            "referralCode": code,
-            "referredById": referred_by_id,
-        }
-    )
-    return user
+    try:
+        user = await prisma.user.create(
+            data={
+                "name": name,
+                "email": email,
+                "phone": phone,
+                "passwordHash": password_hash,
+                "role": "CUSTOMER",
+                "referralCode": code,
+                "referredById": referred_by_id,
+            }
+        )
+        return user
+    except UniqueViolationError as exc:
+        # concurrent race on email/phone unique constraints
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ایمیل یا شماره موبایل تکراری است") from exc
 
 
 async def login_user(prisma: Prisma, email: str, password: str) -> str:
