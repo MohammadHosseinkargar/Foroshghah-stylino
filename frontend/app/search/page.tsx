@@ -65,7 +65,7 @@ export default function SearchPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
         <p className="badge">O�O3O�O�U^</p>
-        <h1 className="text-2xl font-bold text-brand-900">
+        <h1 className="text-xl font-bold text-brand-900 sm:text-2xl">
           O�O3O�O� U+ "{query || "O�O3O�O�U^"}"
         </h1>
         <p className="text-sm text-gray-600">

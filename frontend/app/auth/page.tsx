@@ -57,8 +57,8 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-6 sm:p-8">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="badge">حساب کاربری</p>
           <h1 className="text-2xl font-bold text-brand-900">ورود / ثبت‌نام استایلینو</h1>
