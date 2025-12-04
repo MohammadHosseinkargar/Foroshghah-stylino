@@ -131,7 +131,7 @@ export default function SellerDashboard() {
         return;
       }
       const discountPrice = newProduct.discountPrice ? Number(newProduct.discountPrice) : null;
-      if (newProduct.discountPrice && (Number.isNaN(discountPrice) || discountPrice <= 0)) {
+      if (discountPrice !== null && (Number.isNaN(discountPrice) || discountPrice <= 0)) {
         setError("قیمت تخفیف نامعتبر است.");
         return;
       }

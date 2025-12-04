@@ -15,11 +15,11 @@ export function MobileBottomNav() {
   const cartCount = useMemo(() => getTotalCount(), [getTotalCount, items]);
 
   const navItems = [
-    { href: "/", label: "OrOU+U�", icon: Home },
-    { href: "/search", label: "O�O3O�O�U^", icon: Search },
-    { href: "/products", label: "O_O3O�U؃?OO\"U+O_UO", icon: Grid },
-    { href: "/orders", label: "O3U?OO�O'OO�", icon: Receipt, badge: cartCount },
-    { href: "/auth", label: user ? "OrO�U^O�" : "U_O�U^U?OUOU,", icon: User },
+    { href: "/", label: "خانه", icon: Home },
+    { href: "/search", label: "جستجو", icon: Search },
+    { href: "/products", label: "محصولات", icon: Grid },
+    { href: "/orders", label: "سفارش‌ها", icon: Receipt, badge: cartCount },
+    { href: "/auth", label: user ? "حساب من" : "ورود / ثبت‌نام", icon: User },
   ];
 
   const isActive = (href: string) => {

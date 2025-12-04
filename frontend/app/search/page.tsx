@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ProductSection, DisplayProduct } from "../../components/ProductSection";
 import { useCart } from "../../context/CartContext";
@@ -23,7 +23,7 @@ type Product = {
   isActive: boolean;
 };
 
-export default function SearchPage() {
+function SearchPageContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get("query")?.trim() ?? "";
   const { addItem } = useCart();
@@ -57,37 +57,35 @@ export default function SearchPage() {
         price: p.discountPrice ?? p.basePrice,
         oldPrice: p.discountPrice ? p.basePrice : null,
         image: p.images?.[0],
-        tag: p.discountPrice ? "%U^UOU~U�" : undefined,
+        tag: p.discountPrice ? "% تخفیف" : undefined,
       }));
   }, [products, query]);
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-2">
-        <p className="badge">O�O3O�O�U^</p>
-        <h1 className="text-xl font-bold text-brand-900 sm:text-2xl">
-          O�O3O�O� U+ "{query || "O�O3O�O�U^"}"
-        </h1>
+        <p className="badge">جستجو</p>
+        <h1 className="text-xl font-bold text-brand-900 sm:text-2xl">نتایج جستجو برای "{query || "جستجو"}"</h1>
         <p className="text-sm text-gray-600">
           {query
-            ? `${results.length} O3O�O- O�O"O�`
-            : "O�O3O�O�U^ O�O� U.O-O�U^U, O�O�OU^ UO U^ O�O3O�U�O3O�U� O�Uc�?"}
+            ? `${results.length} نتیجه برای "${query}"`
+            : "برای شروع، نام محصول یا برند دلخواه را جستجو کنید."}
         </p>
       </div>
 
-      {loading && <p className="text-sm text-gray-600">O_O� O-OU, O�O3O�O�U^ U.O-O�U^U,OO�...</p>}
+      {loading && <p className="text-sm text-gray-600">در حال جستجو، کمی صبر کنید...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
 
       {!loading && !error && query && results.length === 0 && (
         <div className="rounded-2xl border border-brand-50 bg-white p-6 shadow-sm">
-          <p className="text-sm text-gray-700">O�O3O�O�U^ O�O� U+O�O� U�O�O_ O�O"O� OO3O�.</p>
+          <p className="text-sm text-gray-700">محصولی مطابق جستجوی شما پیدا نشد.</p>
         </div>
       )}
 
       {!loading && !error && results.length > 0 && (
         <ProductSection
-          title="O�O3O�O�U^ O�O�"
-          subtitle="O�O�U^ O�U+O� U^ O�O3O�U�O3O�U� O3O�UOO1"
+          title="نتایج جستجو"
+          subtitle="محصولات مرتبط با عبارت جستجو شده"
           products={results}
           onAdd={(p) =>
             addItem({
@@ -111,11 +109,21 @@ export default function SearchPage() {
                 price: quickView.price,
                 oldPrice: quickView.oldPrice,
                 image: quickView.image,
-                description: "O�U^OUOO-OO� U.OrO�O�O� U.O-O�U^U, O�O�O� O3O�UOO1 O�U,O�.",
+                description: "توضیح کوتاه محصول برای پیش‌نمایش.",
               }
             : undefined
         }
       />
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense
+      fallback={<p className="text-sm text-gray-600">در حال بارگذاری نتایج جستجو...</p>}
+    >
+      <SearchPageContent />
+    </Suspense>
   );
 }

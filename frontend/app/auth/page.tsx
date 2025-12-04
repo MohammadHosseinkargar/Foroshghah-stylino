@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 
-export default function AuthPage() {
+function AuthContent() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", referralCode: "" });
   const [error, setError] = useState<string | null>(null);
@@ -152,5 +152,19 @@ export default function AuthPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-6 text-center text-sm text-gray-600 sm:p-8">
+          در حال بارگذاری حساب کاربری...
+        </div>
+      }
+    >
+      <AuthContent />
+    </Suspense>
   );
 }

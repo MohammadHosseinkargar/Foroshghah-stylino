@@ -14,20 +14,20 @@ import {
   Store,
   UserRound,
 } from "lucide-react";
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, type ComponentType, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { cn } from "../lib/utils";
 
-type NavLink = { href: string; label: string; icon: React.ComponentType<{ className?: string }> };
+type NavLink = { href: string; label: string; icon: ComponentType<{ className?: string }> };
 
 const links: NavLink[] = [
-  { href: "/products", label: "O_O3O�U؃?OO\"U+O_UO UcOU,OU�O", icon: LayoutGrid },
-  { href: "/search", label: "O'U_U?O��?OOU+U_UOO�U�O", icon: Sparkles },
-  { href: "/seller", label: "U?O�U^O'U+O_U� O'U^UOO_", icon: Store },
-  { href: "/orders", label: "O3U?OO�O'�?OU�O", icon: ShoppingBag },
-  { href: "/admin", label: "U_U+U, U.O_UOO�UOO�", icon: ShieldCheck },
+  { href: "/products", label: "محصولات", icon: LayoutGrid },
+  { href: "/search", label: "جستجو", icon: Sparkles },
+  { href: "/seller", label: "پنل فروشنده", icon: Store },
+  { href: "/orders", label: "سفارش‌ها", icon: ShoppingBag },
+  { href: "/admin", label: "مدیریت", icon: ShieldCheck },
 ];
 
 export function NavBar() {
@@ -96,22 +96,22 @@ export function NavBar() {
                   S
                 </span>
                 <div className="min-w-0 leading-tight">
-                  <p className="truncate text-sm font-black md:text-base">OO3O�OUOU,UOU+U^</p>
-                  <p className="text-[10px] font-semibold text-brand-600 md:text-xs">OrO�UOO_ O�U+U,OUOU+ U.O_ U^ O3O"Uc</p>
+                  <p className="truncate text-sm font-black md:text-base">استایلینو</p>
+                  <p className="text-[10px] font-semibold text-brand-600 md:text-xs">بازار آنلاین مد زنانه</p>
                 </div>
               </Link>
 
               <div className="flex items-center gap-2 sm:hidden">
                 <button
                   className="rounded-full border border-brand-100 bg-white p-2 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"
-                  title="OO1U,OU+�?OU�O"
+                  title="اعلان‌ها"
                   type="button"
                 >
                   <Bell className="h-5 w-5" />
                 </button>
                 <button
                   className="rounded-full border border-brand-100 bg-white p-2 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"
-                  title="U?UOU,O�O�U�O"
+                  title="پیشنهاد ویژه"
                   type="button"
                 >
                   <Sparkles className="h-5 w-5" />
@@ -119,7 +119,7 @@ export function NavBar() {
                 <Link
                   href="/orders"
                   className="relative rounded-full border border-brand-100 bg-white p-2 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"
-                  title="O3O\"O_ OrO�UOO_ / O3U?OO�O'�?OU�O"
+                  title="سبد خرید / سفارش‌ها"
                 >
                   <ShoppingBag className="h-5 w-5" />
                   {cartCount > 0 && (
@@ -131,7 +131,7 @@ export function NavBar() {
                 <Link
                   href="/auth"
                   className="rounded-full border border-brand-100 bg-white p-2 shadow-sm transition hover:border-brand-200 hover:bg-brand-50"
-                  title="U_O�U^U?OUOU,"
+                  title="حساب کاربری"
                 >
                   <UserRound className="h-5 w-5 text-brand-700" />
                 </Link>
@@ -146,21 +146,21 @@ export function NavBar() {
               <input
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="O�O3O�O�U^ O_O� OO3O�OUOU,UOU+U^..."
+                placeholder="جستجوی محصول یا برند..."
                 className="w-full border-none bg-transparent text-sm outline-none placeholder:text-gray-400"
               />
               <button
                 type="submit"
                 className="rounded-full bg-brand-600 px-3 py-2 text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-700 md:px-4"
               >
-                O�O3O�O�U^
+                جستجو
               </button>
             </form>
 
             <div className="hidden items-center gap-2 text-brand-800 sm:flex">
               <button
                 className="relative rounded-full border border-brand-100 bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50"
-                title="U,UOO3O� O1U,OU,U؃?OU.U+O_UO�?OU�O"
+                title="علاقه‌مندی‌ها"
                 type="button"
               >
                 <Heart className="h-5 w-5" />
@@ -173,7 +173,7 @@ export function NavBar() {
 
               <button
                 className="rounded-full border border-brand-100 bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50"
-                title="OO1U,OU+�?OU�O"
+                title="اعلان‌ها"
                 type="button"
               >
                 <Bell className="h-5 w-5" />
@@ -182,7 +182,7 @@ export function NavBar() {
               <Link
                 href="/orders"
                 className="relative rounded-full border border-brand-100 bg-white p-2 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50"
-                title="O3O\"O_ OrO�UOO_ / O3U?OO�O'�?OU�O"
+                title="سبد خرید / سفارش‌ها"
               >
                 <ShoppingBag className="h-5 w-5" />
                 {cartCount > 0 && (
@@ -199,7 +199,7 @@ export function NavBar() {
                   className="hidden items-center gap-2 rounded-full border border-brand-100 bg-white px-3 py-2 text-xs font-semibold text-brand-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50 disabled:cursor-not-allowed disabled:opacity-70 sm:flex"
                 >
                   <UserRound className="h-5 w-5 text-brand-700" />
-                  <span>OrO�U^O� | {user.name}</span>
+                  <span>خروج | {user.name}</span>
                 </button>
               ) : (
                 <Link
@@ -207,7 +207,7 @@ export function NavBar() {
                   className="hidden items-center gap-2 rounded-full border border-brand-100 bg-white px-3 py-2 text-xs font-semibold text-brand-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50 sm:flex"
                 >
                   <UserRound className="h-5 w-5 text-brand-700" />
-                  <span>U^O�U^O_ | O�O\"O��?OU+OU.</span>
+                  <span>حساب کاربری | ورود / ثبت‌نام</span>
                 </Link>
               )}
             </div>
@@ -253,8 +253,8 @@ export function NavBar() {
               className="flex items-center gap-2 rounded-full bg-brand-50 px-4 py-2 text-xs font-semibold text-brand-700 ring-1 ring-brand-100 transition hover:-translate-y-0.5 hover:bg-brand-100"
             >
               <MapPin className="h-4 w-4 text-brand-600" />
-              <span className="hidden sm:inline">O'U�O� OrU^O_ O�O OU+O�OrOO\" UcU+UOO_</span>
-              <span className="sm:hidden">OU+O�OrOO\" O'U�O�</span>
+              <span className="hidden sm:inline">ارسال به تهران | مقصد را انتخاب کنید</span>
+              <span className="sm:hidden">تغییر مقصد</span>
             </button>
           </div>
         </div>
