@@ -28,7 +28,7 @@ export function MobileBottomNav() {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-brand-50 bg-white/95 shadow-[0_-6px_30px_rgba(212,63,120,0.12)] backdrop-blur supports-[backdrop-filter]:bg-white/85 md:hidden">
+    <nav className="fixed bottom-0 left-0 right-0 z-40 border-t border-brand-50 bg-white/95 shadow-[0_-6px_30px_rgba(212,63,120,0.12)] backdrop-blur supports-[backdrop-filter]:bg-white/85 dark:border-slate-800 dark:bg-slate-900/90 dark:shadow-[0_-6px_26px_rgba(0,0,0,0.4)] supports-[backdrop-filter]:dark:bg-slate-900/80 md:hidden">
       <div className="mx-auto flex max-w-5xl items-stretch justify-between gap-1 px-3 pb-[calc(env(safe-area-inset-bottom)+0.35rem)] pt-2">
         {navItems.map((item) => (
           <Link
@@ -36,11 +36,18 @@ export function MobileBottomNav() {
             href={item.href}
             className={cn(
               "relative flex flex-1 flex-col items-center justify-center gap-1 rounded-2xl px-2 py-2 text-[11px] font-semibold transition",
-              isActive(item.href) ? "bg-brand-50 text-brand-700 ring-1 ring-brand-100" : "text-gray-500 hover:text-brand-700"
+              isActive(item.href)
+                ? "bg-brand-50 text-brand-700 ring-1 ring-brand-100 dark:bg-slate-800 dark:text-white dark:ring-slate-700"
+                : "text-gray-500 hover:text-brand-700 dark:text-slate-300 dark:hover:text-white"
             )}
             aria-current={isActive(item.href) ? "page" : undefined}
           >
-            <item.icon className={cn("h-5 w-5", isActive(item.href) ? "stroke-brand-700" : "stroke-current")} />
+            <item.icon
+              className={cn(
+                "h-5 w-5",
+                isActive(item.href) ? "stroke-brand-700 dark:stroke-white" : "stroke-current dark:stroke-slate-200"
+              )}
+            />
             {item.badge ? (
               <span className="absolute right-2 top-1 h-4 min-w-4 rounded-full bg-brand-600 px-1 text-[10px] font-bold leading-4 text-white">
                 {item.badge}

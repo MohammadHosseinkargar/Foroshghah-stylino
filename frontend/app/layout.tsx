@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="fa" dir="rtl">
-      <body className={cn(vazir.className, "bg-white antialiased")}>
+      <body className={cn(vazir.className, "bg-white text-gray-900 antialiased transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100")}>
         <Providers>
           <Suspense fallback={<div className="h-24" />}>
             <NavBar />

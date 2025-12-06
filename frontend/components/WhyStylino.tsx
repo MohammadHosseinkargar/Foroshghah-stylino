@@ -1,11 +1,11 @@
 export function WhyStylino() {
   return (
-    <section className="overflow-hidden rounded-3xl bg-gradient-to-l from-white via-brand-50/60 to-white p-6 shadow-soft">
+    <section className="overflow-hidden rounded-3xl bg-gradient-to-br from-white via-brand-50/50 to-white p-6 shadow-lg ring-1 ring-brand-100/40 dark:from-slate-900 dark:via-slate-900/80 dark:to-slate-950 dark:ring-slate-800">
       <div className="grid gap-6 md:grid-cols-2 md:items-center">
         <div className="order-2 md:order-1 space-y-2">
           <p className="badge mb-1">چرا استایلینو؟</p>
-          <h2 className="text-2xl font-bold text-brand-900">انتخابی مطمئن برای استایل زنانه</h2>
-          <ul className="mt-3 space-y-2 text-sm text-gray-700">
+          <h2 className="text-2xl font-bold text-brand-900 dark:text-white">انتخابی مطمئن برای استایل زنانه</h2>
+          <ul className="mt-3 space-y-2 text-sm text-gray-700 dark:text-slate-300">
             <li className="flex items-start gap-2">
               <span className="mt-1 h-2 w-2 rounded-full bg-brand-500" />
               محصولات curated از فروشندگان منتخب با تمرکز بر کیفیت پارچه، دوخت و تنخور.
@@ -20,7 +20,7 @@ export function WhyStylino() {
             </li>
           </ul>
         </div>
-        <div className="order-1 md:order-2 h-40 rounded-2xl bg-[radial-gradient(circle_at_30%_30%,#fdeaf3,transparent_40%),radial-gradient(circle_at_80%_0%,#f8cfe5,transparent_35%)] md:h-56" />
+        <div className="order-1 md:order-2 h-40 rounded-2xl bg-[radial-gradient(circle_at_30%_30%,#fdeaf3,transparent_40%),radial-gradient(circle_at_80%_0%,#f8cfe5,transparent_35%)] md:h-56 dark:bg-[radial-gradient(circle_at_30%_30%,rgba(248,113,180,0.12),transparent_45%),radial-gradient(circle_at_80%_0%,rgba(126,34,206,0.1),transparent_40%)]" />
       </div>
     </section>
   );

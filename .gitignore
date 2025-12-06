@@ -6,3 +6,6 @@ backend/.venv
 *.log
 __pycache__/
 .DS_Store
+frontend/.next/
+# یا اگر پروژه‌ات روت frontend نیست:
+.next/
