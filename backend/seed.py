@@ -1,6 +1,5 @@
 import asyncio
-
-import prisma.fields as fields
+import json
 
 from app.core.security import get_password_hash
 from app.db import prisma
@@ -59,9 +58,9 @@ async def ensure_product(
             "discountPrice": discount_price,
             "categoryId": category_id,
             "brand": brand,
-            "colors": fields.Json(colors),
-            "sizes": fields.Json(sizes),
-            "images": fields.Json(images),
+            "colors": json.dumps(colors, ensure_ascii=False),
+            "sizes": json.dumps(sizes, ensure_ascii=False),
+            "images": json.dumps(images, ensure_ascii=False),
             "isActive": True,
         }
     )

@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Depends
 
 from prisma import Prisma
@@ -17,6 +18,16 @@ def _iso(dt):
     return dt.isoformat() if dt else ""
 
 
+def _decode_list(value):
+    if not value:
+        return []
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, list) else []
+    except Exception:
+        return []
+
+
 @router.get("/products", response_model=list[ProductOut], summary="محصولات من")
 async def list_seller_products(
     db: Prisma = Depends(get_db),
@@ -34,9 +45,9 @@ async def list_seller_products(
             categoryId=p.categoryId,
             categoryName=p.category.name if p.category else None,
             brand=p.brand,
-            colors=p.colors or [],
-            sizes=p.sizes or [],
-            images=p.images or [],
+            colors=_decode_list(p.colors),
+            sizes=_decode_list(p.sizes),
+            images=_decode_list(p.images),
             isActive=p.isActive,
         )
         for p in products
@@ -50,7 +61,11 @@ async def create_seller_product(
     current_user: User = Depends(require_roles(["SELLER"])),
 ):
     product = await create_product(db, seller_id=current_user.id, data=payload)
-    return ProductOut(**product.dict())
+    data = product.dict()
+    data["colors"] = _decode_list(data.get("colors"))
+    data["sizes"] = _decode_list(data.get("sizes"))
+    data["images"] = _decode_list(data.get("images"))
+    return ProductOut(**data)
 
 
 @router.put("/products/{product_id}", response_model=ProductOut, summary="به‌روزرسانی محصول")
@@ -61,7 +76,11 @@ async def update_seller_product(
     current_user: User = Depends(require_roles(["SELLER"])),
 ):
     product = await update_product(db, product_id=product_id, seller_id=current_user.id, data=payload)
-    return ProductOut(**product.dict())
+    data = product.dict()
+    data["colors"] = _decode_list(data.get("colors"))
+    data["sizes"] = _decode_list(data.get("sizes"))
+    data["images"] = _decode_list(data.get("images"))
+    return ProductOut(**data)
 
 
 @router.delete("/products/{product_id}", summary="حذف محصول")

@@ -1,14 +1,14 @@
 import json
 
 from fastapi import HTTPException, status
-from prisma import Prisma, fields
+from prisma import Prisma
 
 from ..schemas.product import ProductCreate, ProductUpdate
 
 
 def _json_list(value):
-    """Ensure JSON columns get Prisma Json wrapper with a plain list."""
-    return fields.Json(json.loads(json.dumps(list(value or []))))
+    """Serialize list-like values to JSON string (SQL Server lacks native Json)."""
+    return json.dumps(list(value or []), ensure_ascii=False)
 
 
 async def create_product(prisma: Prisma, seller_id: int, data: ProductCreate):
@@ -35,9 +35,14 @@ async def update_product(prisma: Prisma, product_id: int, seller_id: int, data: 
     if not product or product.sellerId != seller_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="محصول یافت نشد")
 
+    update_data = data.dict(exclude_unset=True)
+    for key in ("colors", "sizes", "images"):
+        if key in update_data and update_data[key] is not None:
+            update_data[key] = _json_list(update_data[key])
+
     updated = await prisma.product.update(
         where={"id": product_id},
-        data=data.dict(exclude_unset=True),
+        data=update_data,
     )
     return updated
 
