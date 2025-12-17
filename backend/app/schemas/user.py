@@ -26,6 +26,7 @@ class UserOut(BaseModel):
     role: str
     referralCode: str
     referredById: Optional[int] = None
+    emailVerified: bool = False
 
     class Config:
         orm_mode = True

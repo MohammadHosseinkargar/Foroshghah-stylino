@@ -2,18 +2,16 @@ version: "3.8"
 
 services:
   db:
-    image: mysql:8.0
+    image: postgres:16
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: stylino_db
-      MYSQL_USER: stylino
-      MYSQL_PASSWORD: stylino
-      MYSQL_ROOT_PASSWORD: rootpass
+      POSTGRES_DB: stylino_db
+      POSTGRES_USER: stylino
+      POSTGRES_PASSWORD: stylino
     ports:
-      - "3306:3306"
-    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+      - "5432:5432"
     volumes:
-      - stylino_db_data:/var/lib/mysql
+      - stylino_db_data:/var/lib/postgresql/data
 
 volumes:
   stylino_db_data:

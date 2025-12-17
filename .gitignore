@@ -4,5 +4,14 @@ backend/.venv
 .env
 .env.*
 *.log
+*.tsbuildinfo
 __pycache__/
 .DS_Store
+
+# Next.js build artifacts
+frontend/.next/
+.next/
+
+# Archives
+*.zip
+*.rar
