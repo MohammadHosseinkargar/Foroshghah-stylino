@@ -115,7 +115,10 @@ export default function AdminPanel() {
           </div>
           <div className="space-y-3">
             {users.map((u) => (
-              <div key={u.id} className="flex items-center justify-between rounded-xl border border-brand-50 px-3 py-3">
+              <div
+                key={u.id}
+                className="flex flex-col gap-2 rounded-xl border border-brand-50 px-3 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
                 <div>
                   <p className="font-semibold text-brand-900">{u.name}</p>
                   <p className="text-xs text-gray-600">کد دعوت: {u.referralCode}</p>
@@ -123,7 +126,7 @@ export default function AdminPanel() {
                 <select
                   value={u.role}
                   onChange={(e) => updateRole(u.id, e.target.value as User["role"])}
-                  className="rounded-full border border-brand-200 px-3 py-1 text-xs"
+                  className="w-full rounded-full border border-brand-200 px-3 py-1 text-xs sm:w-auto"
                 >
                   <option value="CUSTOMER">CUSTOMER</option>
                   <option value="SELLER">SELLER</option>

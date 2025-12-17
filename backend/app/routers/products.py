@@ -1,3 +1,4 @@
+import json
 from fastapi import APIRouter, Depends
 
 from prisma import Prisma
@@ -8,6 +9,16 @@ from ..schemas.product import ProductOut
 from ..services.product_service import get_product_detail, list_active_products, list_categories
 
 router = APIRouter()
+
+
+def _decode_list(value):
+    if not value:
+        return []
+    try:
+        parsed = json.loads(value)
+        return parsed if isinstance(parsed, list) else []
+    except Exception:
+        return []
 
 
 @router.get("/", response_model=list[ProductOut], summary="لیست محصولات فعال")
@@ -24,9 +35,9 @@ async def list_products(db: Prisma = Depends(get_db)):
             categoryId=p.categoryId,
             categoryName=p.category.name if p.category else None,
             brand=p.brand,
-            colors=p.colors or [],
-            sizes=p.sizes or [],
-            images=p.images or [],
+            colors=_decode_list(p.colors),
+            sizes=_decode_list(p.sizes),
+            images=_decode_list(p.images),
             isActive=p.isActive,
         )
         for p in products
@@ -52,8 +63,8 @@ async def product_detail(product_id: int, db: Prisma = Depends(get_db)):
         categoryId=product.categoryId,
         categoryName=product.category.name if product.category else None,
         brand=product.brand,
-        colors=product.colors or [],
-        sizes=product.sizes or [],
-        images=product.images or [],
+        colors=_decode_list(product.colors),
+        sizes=_decode_list(product.sizes),
+        images=_decode_list(product.images),
         isActive=product.isActive,
     )

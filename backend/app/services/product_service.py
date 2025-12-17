@@ -1,22 +1,30 @@
+import json
+
 from fastapi import HTTPException, status
 from prisma import Prisma
 
 from ..schemas.product import ProductCreate, ProductUpdate
 
 
+def _json_list(value):
+    """Serialize list-like values to JSON string (SQL Server lacks native Json)."""
+    return json.dumps(list(value or []), ensure_ascii=False)
+
+
 async def create_product(prisma: Prisma, seller_id: int, data: ProductCreate):
+    # Set both scalar FKs and relation connects to satisfy the client schema.
     return await prisma.product.create(
         data={
-            "sellerId": seller_id,
+            "seller": {"connect": {"id": seller_id}},
+            "category": {"connect": {"id": data.categoryId}},
             "name": data.name,
             "description": data.description,
             "basePrice": data.basePrice,
             "discountPrice": data.discountPrice,
-            "categoryId": data.categoryId,
             "brand": data.brand,
-            "colors": data.colors,
-            "sizes": data.sizes,
-            "images": data.images,
+            "colors": _json_list(data.colors),
+            "sizes": _json_list(data.sizes),
+            "images": _json_list(data.images),
             "isActive": data.isActive,
         }
     )
@@ -27,9 +35,14 @@ async def update_product(prisma: Prisma, product_id: int, seller_id: int, data: 
     if not product or product.sellerId != seller_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="محصول یافت نشد")
 
+    update_data = data.dict(exclude_unset=True)
+    for key in ("colors", "sizes", "images"):
+        if key in update_data and update_data[key] is not None:
+            update_data[key] = _json_list(update_data[key])
+
     updated = await prisma.product.update(
         where={"id": product_id},
-        data=data.dict(exclude_unset=True),
+        data=update_data,
     )
     return updated
 

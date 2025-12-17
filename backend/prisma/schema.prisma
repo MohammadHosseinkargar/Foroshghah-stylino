@@ -4,33 +4,8 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlserver"
   url      = env("DATABASE_URL")
-}
-
-enum Role {
-  CUSTOMER
-  SELLER
-  ADMIN
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  CANCELED
-  REFUNDED
-}
-
-enum PaymentStatus {
-  UNPAID
-  PAID
-  FAILED
-  REFUNDED
-}
-
-enum CommissionStatus {
-  PENDING
-  PAID
 }
 
 model User {
@@ -39,52 +14,93 @@ model User {
   email         String    @unique
   phone         String?   @unique
   passwordHash  String
-  role          Role      @default(CUSTOMER)
+  role          String    @default("CUSTOMER") @db.VarChar(50)
   referralCode  String    @unique
   referredById  Int?
-  referredBy    User?     @relation("UserReferral", fields: [referredById], references: [id])
+  referredBy    User?     @relation("UserReferral", fields: [referredById], references: [id], onDelete: NoAction, onUpdate: NoAction)
   referrals     User[]    @relation("UserReferral")
   products      Product[]
   orders        Order[]   @relation("UserOrders")
   commissionsTo Commission[] @relation("CommissionToUser")
   commissionsFrom Commission[] @relation("CommissionFromUser")
   sellerPayouts SellerPayout[]
+  addresses     Address[]
+  cartItems     CartItem[]
+  refreshTokens RefreshToken[]
+  emailVerified Boolean   @default(false)
+  emailVerificationToken String?
+  emailVerificationExpires DateTime?
+  passwordResetToken String?
+  passwordResetExpires DateTime?
+  isBanned      Boolean   @default(false)
+  deletedAt     DateTime?
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([referralCode])
+  @@index([createdAt])
 }
 
 model Category {
-  id    Int    @id @default(autoincrement())
-  name  String
-  slug  String @unique
-  products Product[]
+  id          Int       @id @default(autoincrement())
+  name        String
+  slug        String    @unique
+  parentId    Int?
+  parent      Category? @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    Category[] @relation("CategoryHierarchy")
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
+  @@index([parentId])
 }
 
 model Product {
   id            Int      @id @default(autoincrement())
   sellerId      Int
-  seller        User     @relation(fields: [sellerId], references: [id])
+  seller        User     @relation(fields: [sellerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   name          String
-  description   String
+  slug          String   @unique
+  description   String   @db.Text
   basePrice     Float
   discountPrice Float?
   categoryId    Int
-  category      Category @relation(fields: [categoryId], references: [id])
+  category      Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   brand         String
-  colors        Json
-  sizes         Json
-  images        Json
+  colors        String   @db.NVarChar(max)
+  sizes         String   @db.NVarChar(max)
+  images        String   @db.NVarChar(max)
   isActive      Boolean  @default(true)
+  stock         Int      @default(0)
+  sku           String?
+  metaTitle     String?
+  metaDescription String? @db.Text
+  deletedAt     DateTime?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
   orderItems    OrderItem[]
+  variants      ProductVariant[]
+  cartItems     CartItem[]
+
+  @@index([sellerId])
+  @@index([categoryId])
+  @@index([slug])
+  @@index([isActive])
+  @@index([createdAt])
 }
 
 model Order {
   id            Int          @id @default(autoincrement())
-  customerId    Int
-  customer      User         @relation("UserOrders", fields: [customerId], references: [id])
+  customerId    Int?
+  customer      User?        @relation("UserOrders", fields: [customerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  guestEmail    String?
+  guestPhone    String?
+  guestName     String?
   totalAmount   Float
+ main
   status        OrderStatus   @default(PENDING)
   paymentStatus PaymentStatus @default(UNPAID)
   paymentAmount Int?
@@ -95,42 +111,193 @@ model Order {
   fee           Int?
   paymentGateway String?      @default("ZARINPAL")
   paymentMessage String?
+
+  shippingAmount Float       @default(0)
+  discountAmount Float       @default(0)
+  status        String   @default("PENDING") @db.VarChar(50)
+  paymentStatus String   @default("UNPAID") @db.VarChar(50)
+  paymentMethod String?  @db.VarChar(50)
+  shippingStatus String  @default("PENDING") @db.VarChar(50)
+  shippingAddressId Int?
+  shippingAddress Address?   @relation("OrderShippingAddress", fields: [shippingAddressId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  shippingMethodId Int?
+  shippingMethod ShippingMethod? @relation(fields: [shippingMethodId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  trackingNumber String?
+  couponCode    String?
   items         OrderItem[]
   commissions   Commission[]
+  transactions  PaymentTransaction[]
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+
+  @@index([customerId])
+  @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
 }
 
 model OrderItem {
-  id         Int     @id @default(autoincrement())
-  orderId    Int
-  order      Order   @relation(fields: [orderId], references: [id])
-  productId  Int
-  product    Product @relation(fields: [productId], references: [id])
-  quantity   Int
-  unitPrice  Float
-  totalPrice Float
+  id            Int     @id @default(autoincrement())
+  orderId       Int
+  order         Order   @relation(fields: [orderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  productId     Int
+  product       Product @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  variantId     Int?
+  variant       ProductVariant? @relation(fields: [variantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  quantity      Int
+  unitPrice     Float
+  totalPrice    Float
+  color         String?
+  size          String?
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model Commission {
   id          Int              @id @default(autoincrement())
   orderId     Int
-  order       Order            @relation(fields: [orderId], references: [id])
+  order       Order            @relation(fields: [orderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   fromUserId  Int
-  fromUser    User             @relation("CommissionFromUser", fields: [fromUserId], references: [id])
+  fromUser    User             @relation("CommissionFromUser", fields: [fromUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   toUserId    Int
-  toUser      User             @relation("CommissionToUser", fields: [toUserId], references: [id])
+  toUser      User             @relation("CommissionToUser", fields: [toUserId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   level       Int
   amount      Float
-  status      CommissionStatus @default(PENDING)
+  status      String   @default("PENDING") @db.VarChar(50)
   createdAt   DateTime         @default(now())
 }
 
 model SellerPayout {
   id         Int      @id @default(autoincrement())
   sellerId   Int
-  seller     User     @relation(fields: [sellerId], references: [id])
+  seller     User     @relation(fields: [sellerId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   amount     Float
   status     String   @default("PENDING")
   createdAt  DateTime @default(now())
+  processedAt DateTime?
+
+  @@index([sellerId])
+  @@index([status])
+}
+
+// New models for missing features
+
+model ProductVariant {
+  id          Int      @id @default(autoincrement())
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sku         String   @unique
+  color       String
+  size        String
+  price       Float
+  stock       Int      @default(0)
+  isActive    Boolean  @default(true)
+  orderItems  OrderItem[]
+  cartItems   CartItem[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([productId])
+  @@index([sku])
+  @@unique([productId, color, size])
+}
+
+model Address {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  fullName    String
+  phone       String
+  province    String
+  city        String
+  address     String   @db.Text
+  postalCode  String
+  isDefault   Boolean  @default(false)
+  orders      Order[]  @relation("OrderShippingAddress")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model ShippingMethod {
+  id          Int      @id @default(autoincrement())
+  name        String
+  description String? @db.Text
+  cost        Float
+  estimatedDays Int
+  isActive    Boolean @default(true)
+  orders      Order[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model PaymentTransaction {
+  id              Int      @id @default(autoincrement())
+  orderId         Int
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  transactionId   String?  @unique
+  gateway         String
+  amount          Float
+  status          String
+  gatewayResponse String?  @db.NVarChar(max)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([transactionId])
+  @@index([status])
+}
+
+model CartItem {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  productId   Int
+  product     Product  @relation(fields: [productId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  variantId   Int?
+  variant     ProductVariant? @relation(fields: [variantId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  quantity    Int
+  sessionId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([sessionId])
+  @@unique([userId, productId, variantId])
+}
+
+model RefreshToken {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  token       String   @unique
+  expiresAt   DateTime
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
+}
+
+model Coupon {
+  id            Int      @id @default(autoincrement())
+  code          String   @unique
+  discountType  String   // PERCENTAGE or FIXED
+  discountValue Float
+  minPurchase   Float?
+  maxDiscount   Float?
+  usageLimit    Int?
+  usedCount     Int      @default(0)
+  validFrom      DateTime
+  validUntil     DateTime
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([code])
+  @@index([isActive])
 }

@@ -1,6 +1,8 @@
 "use client";
 
+
 import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { type AuthUser, useAuth } from "../../context/AuthContext";
 
@@ -10,7 +12,7 @@ const ROLE_PATH: Record<AuthUser["role"], string> = {
   ADMIN: "/admin",
 };
 
-export default function AuthPage() {
+function AuthContent() {
   const [mode, setMode] = useState<"login" | "register">("login");
   const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", referralCode: "" });
   const [error, setError] = useState<string | null>(null);
@@ -75,8 +77,8 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-8">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-6 sm:p-8">
+      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="badge">O-O3OO" UcOO�O"O�UO</p>
           <h1 className="text-2xl font-bold text-brand-900">U^O�U^O_ / O�O"O��?OU+OU. OO3O�OUOU,UOU+U^</h1>
@@ -170,5 +172,19 @@ export default function AuthPage() {
         </button>
       </form>
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-6 text-center text-sm text-gray-600 sm:p-8">
+          در حال بارگذاری حساب کاربری...
+        </div>
+      }
+    >
+      <AuthContent />
+    </Suspense>
   );
 }

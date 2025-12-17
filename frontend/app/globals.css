@@ -8,19 +8,37 @@
     radial-gradient(circle at 90% 0%, #fff2fb 0, #fff 25%);
 }
 
+:root.dark {
+  color-scheme: dark;
+  background: radial-gradient(circle at 10% 20%, #0f172a 0, #0b1222 30%),
+    radial-gradient(circle at 90% 10%, #111827 0, #0b1222 35%);
+}
+
 html,
 body {
   height: 100%;
 }
 
 body {
-  @apply bg-white text-gray-800;
+  @apply bg-white text-gray-800 transition-colors duration-200;
+}
+
+.dark body {
+  @apply bg-slate-950 text-slate-100;
 }
 
 .glass-card {
-  @apply rounded-2xl bg-white/80 backdrop-blur shadow-soft;
+  @apply rounded-2xl border border-brand-50 bg-white/80 backdrop-blur shadow-soft transition-colors duration-200;
+}
+
+.dark .glass-card {
+  @apply border-slate-800 bg-slate-900/70 shadow-black/30;
 }
 
 .badge {
-  @apply inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-800;
+  @apply inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-medium text-brand-800 transition-colors duration-200;
+}
+
+.dark .badge {
+  @apply bg-slate-800 text-slate-100 ring-1 ring-slate-700;
 }

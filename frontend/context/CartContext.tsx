@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 export type CartItem = {
   productId: number;
@@ -10,12 +10,22 @@ export type CartItem = {
   image?: string;
 };
 
+type CartProductInput = {
+  productId: number;
+  name: string;
+  price: number;
+  image?: string;
+};
+
 type CartContextType = {
   items: CartItem[];
-  addItem: (item: CartItem) => void;
+  addItem: (product: CartProductInput, quantity?: number) => void;
   removeItem: (productId: number) => void;
-  clear: () => void;
-  total: number;
+  decrementItem: (productId: number) => void;
+  clearCart: () => void;
+  getTotalPrice: () => number;
+  getTotalCount: () => number;
+  isEmpty: boolean;
 };
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -42,15 +52,16 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items]);
 
-  const addItem = (item: CartItem) => {
+  const addItem = (product: CartProductInput, quantity = 1) => {
+    const safeQuantity = quantity > 0 ? quantity : 1;
     setItems((prev) => {
-      const existing = prev.find((p) => p.productId === item.productId);
+      const existing = prev.find((p) => p.productId === product.productId);
       if (existing) {
         return prev.map((p) =>
-          p.productId === item.productId ? { ...p, quantity: p.quantity + item.quantity } : p
+          p.productId === product.productId ? { ...p, quantity: p.quantity + safeQuantity } : p
         );
       }
-      return [...prev, item];
+      return [...prev, { ...product, quantity: safeQuantity }];
     });
   };
 
@@ -58,12 +69,36 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setItems((prev) => prev.filter((p) => p.productId !== productId));
   };
 
-  const clear = () => setItems([]);
+  const decrementItem = (productId: number) => {
+    setItems((prev) => {
+      const existing = prev.find((p) => p.productId === productId);
+      if (!existing) return prev;
+      if (existing.quantity <= 1) {
+        return prev.filter((p) => p.productId !== productId);
+      }
+      return prev.map((p) => (p.productId === productId ? { ...p, quantity: p.quantity - 1 } : p));
+    });
+  };
 
-  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const clearCart = () => setItems([]);
+
+  const totalPrice = useMemo(() => items.reduce((sum, item) => sum + item.price * item.quantity, 0), [items]);
+  const totalCount = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+  const isEmpty = items.length === 0;
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, clear, total }}>
+    <CartContext.Provider
+      value={{
+        items,
+        addItem,
+        removeItem,
+        decrementItem,
+        clearCart,
+        getTotalPrice: () => totalPrice,
+        getTotalCount: () => totalCount,
+        isEmpty,
+      }}
+    >
       {children}
     </CartContext.Provider>
   );
