@@ -1,25 +1,34 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
-import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import { Grid, Home, Receipt, Search, User } from "lucide-react";
-import { useCart } from "../context/CartContext";
+
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import { cn } from "../lib/utils";
 
 export function MobileBottomNav() {
   const pathname = usePathname();
-  const { getTotalCount, items } = useCart();
+  const { getTotalCount } = useCart();
   const { user } = useAuth();
-  const cartCount = useMemo(() => getTotalCount(), [getTotalCount, items]);
+  const cartCount = getTotalCount();
 
   const navItems = [
-    { href: "/", label: "خانه", icon: Home },
-    { href: "/search", label: "جستجو", icon: Search },
-    { href: "/products", label: "محصولات", icon: Grid },
-    { href: "/orders", label: "سفارش‌ها", icon: Receipt, badge: cartCount },
-    { href: "/auth", label: user ? "حساب من" : "ورود / ثبت‌نام", icon: User },
+    { href: "/", label: "\u062E\u0627\u0646\u0647", icon: Home },
+    { href: "/search", label: "\u062C\u0633\u062A\u062C\u0648", icon: Search },
+    { href: "/products", label: "\u0645\u062D\u0635\u0648\u0644\u0627\u062A", icon: Grid },
+    {
+      href: "/orders",
+      label: "\u0633\u0641\u0627\u0631\u0634\u200C\u0647\u0627",
+      icon: Receipt,
+      badge: cartCount,
+    },
+    {
+      href: "/auth",
+      label: user ? "\u062D\u0633\u0627\u0628" : "\u0648\u0631\u0648\u062F / \u062B\u0628\u062A\u200C\u0646\u0627\u0645",
+      icon: User,
+    },
   ];
 
   const isActive = (href: string) => {
@@ -45,7 +54,9 @@ export function MobileBottomNav() {
             <item.icon
               className={cn(
                 "h-5 w-5",
-                isActive(item.href) ? "stroke-brand-700 dark:stroke-white" : "stroke-current dark:stroke-slate-200"
+                isActive(item.href)
+                  ? "stroke-brand-700 dark:stroke-white"
+                  : "stroke-current dark:stroke-slate-200"
               )}
             />
             {item.badge ? (

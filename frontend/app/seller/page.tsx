@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../../context/AuthContext";
 import { apiRequest } from "../../lib/api";
@@ -84,7 +84,7 @@ export default function SellerDashboard() {
     setActiveEdits(actives);
   };
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     if (!token) return;
     setDataLoading(true);
     setError(null);
@@ -107,7 +107,7 @@ export default function SellerDashboard() {
     } finally {
       setDataLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     if (loading) return;
@@ -116,7 +116,7 @@ export default function SellerDashboard() {
       return;
     }
     loadData();
-  }, [loading, token, user, router]);
+  }, [loading, token, user, router, loadData]);
 
   const handleCreateProduct = async (e: React.FormEvent) => {
     e.preventDefault();

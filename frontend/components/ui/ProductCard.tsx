@@ -1,13 +1,14 @@
-"use client";
+﻿"use client";
 
 import { Heart, ShoppingBag, Eye } from "lucide-react";
 import { motion, type HTMLMotionProps } from "framer-motion";
+import * as React from "react";
 import { cn } from "../../lib/utils";
 import { Badge } from "./Badge";
 import { Button } from "./Button";
 import { ProductImageFallback } from "./ProductImageFallback";
 
-export interface ProductCardProps extends HTMLMotionProps<"div"> {
+export interface ProductCardProps extends Omit<HTMLMotionProps<"div">, "id" | "ref"> {
   id: number;
   name: string;
   price: number;
@@ -22,6 +23,7 @@ export interface ProductCardProps extends HTMLMotionProps<"div"> {
 }
 
 export function ProductCard({
+  id: productId,
   name,
   price,
   oldPrice,
@@ -48,6 +50,7 @@ export function ProductCard({
         rotateY: 2,
       }}
       transition={{ type: "spring", stiffness: 250, damping: 25 }}
+      data-product-id={productId}
       className={cn(
         "group relative flex h-full flex-col overflow-hidden rounded-[28px] bg-gradient-to-br from-white via-pink-50/40 to-white shadow-[0_25px_70px_rgba(15,23,42,0.18)] ring-1 ring-white/60 backdrop-blur dark:from-slate-900 dark:via-slate-900/90 dark:to-slate-900 dark:ring-slate-800",
         "transform-gpu will-change-transform",
@@ -100,7 +103,7 @@ export function ProductCard({
               transition={{ type: "spring", stiffness: 300 }}
             >
               <Badge variant="luxury" size="sm" className="bg-white/90 text-pink-600 shadow-[0_10px_30px_rgba(244,114,182,0.4)] dark:text-pink-400">
-                {discount}% تخفیف
+                {discount}% {"\u062A\u062E\u0641\u06CC\u0641"}
               </Badge>
             </motion.div>
           )}
@@ -122,7 +125,7 @@ export function ProductCard({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={(event) => {
+                onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
                   event.stopPropagation();
                   onQuickView();
                 }}
@@ -135,7 +138,7 @@ export function ProductCard({
               <Button
                 variant="secondary"
                 size="sm"
-                onClick={(event) => {
+                onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
                   event.stopPropagation();
                   onAddToWishlist();
                 }}
@@ -153,11 +156,11 @@ export function ProductCard({
         <h3 className="line-clamp-2 text-sm font-black text-slate-900 dark:text-white sm:text-base">{name}</h3>
         <div className="flex items-center gap-3">
           <span className="text-lg font-black text-pink-600 dark:text-pink-400">
-            {price.toLocaleString("fa-IR")} تومان
+            {price.toLocaleString("fa-IR")} ØªÙˆÙ…Ø§Ù†
           </span>
           {hasDiscount && (
             <span className="text-xs text-slate-400 line-through dark:text-slate-500">
-              {oldPrice?.toLocaleString("fa-IR")} تومان
+              {oldPrice?.toLocaleString("fa-IR")} ØªÙˆÙ…Ø§Ù†
             </span>
           )}
         </div>
@@ -173,7 +176,7 @@ export function ProductCard({
               <Button
                 variant="primary"
                 size="sm"
-                onClick={(event) => {
+                onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
                   event.stopPropagation();
                   onAddToCart();
                 }}
@@ -182,8 +185,7 @@ export function ProductCard({
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-transparent opacity-0 transition-opacity hover:opacity-100" />
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   <ShoppingBag className="h-4 w-4" />
-                  افزودن به سبد
-                </span>
+                  {"\u0627\u0641\u0632\u0648\u062F\u0646 \u0628\u0647 \u0633\u0628\u062F \u062E\u0631\u06CC\u062F"}</span>
               </Button>
             </motion.div>
           )}
@@ -192,3 +194,7 @@ export function ProductCard({
     </motion.div>
   );
 }
+
+
+
+

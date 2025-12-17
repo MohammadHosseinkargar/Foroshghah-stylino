@@ -37,10 +37,10 @@ export function NavBar() {
   const router = useRouter();
   const { user, logout, loading: authLoading } = useAuth();
   const [scrolled, setScrolled] = useState(false);
-  const { items: cartItems, getTotalCount } = useCart();
+  const { getTotalCount } = useCart();
   const { count: wishlistCount } = useWishlist();
   const [searchTerm, setSearchTerm] = useState("");
-  const cartCount = useMemo(() => getTotalCount(), [getTotalCount, cartItems]);
+  const cartCount = getTotalCount();
 
   const handleLogout = () => {
     if (authLoading) return;

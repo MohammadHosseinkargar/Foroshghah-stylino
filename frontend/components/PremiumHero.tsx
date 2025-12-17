@@ -1,9 +1,9 @@
-"use client";
+﻿"use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Float, MeshDistortMaterial } from "@react-three/drei";
 import { motion } from "framer-motion";
-import { useEffect, useRef, useState, type PointerEvent } from "react";
+import { useEffect, useRef, useState, type ComponentType, type PointerEvent } from "react";
 import { Group, Mesh } from "three";
 
 type PremiumHeroProps = {
@@ -27,6 +27,8 @@ const arrowVariants = {
   initial: { x: 0 },
   hover: { x: 6 },
 };
+
+const FloatAny = Float as unknown as ComponentType<any>;
 
 function HeroScene({ pointer, scrollY }: SceneProps) {
   const masterRef = useRef<Group>(null);
@@ -60,7 +62,7 @@ function HeroScene({ pointer, scrollY }: SceneProps) {
       <directionalLight position={[5, 5, 5]} intensity={0.4} color="#fce7f3" />
 
       {/* Main floating shape - fashion-inspired blob */}
-      <Float floatIntensity={1.4} rotationIntensity={0.4} speed={1.6}>
+      <FloatAny floatIntensity={1.4} rotationIntensity={0.4} speed={1.6}>
         <mesh castShadow receiveShadow ref={clothRef}>
           <icosahedronGeometry args={[1.5, 2]} />
           <MeshDistortMaterial 
@@ -73,10 +75,10 @@ function HeroScene({ pointer, scrollY }: SceneProps) {
             opacity={0.95}
           />
         </mesh>
-      </Float>
+      </FloatAny>
 
       {/* Secondary floating element */}
-      <Float floatIntensity={0.8} rotationIntensity={0.5} speed={1.3}>
+      <FloatAny floatIntensity={0.8} rotationIntensity={0.5} speed={1.3}>
         <mesh position={[1.8, -0.3, 0]}>
           <torusGeometry args={[0.5, 0.18, 24, 64]} />
           <MeshDistortMaterial 
@@ -87,10 +89,10 @@ function HeroScene({ pointer, scrollY }: SceneProps) {
             metalness={0.55}
           />
         </mesh>
-      </Float>
+      </FloatAny>
 
       {/* Animated ring */}
-      <Float floatIntensity={0.7} rotationIntensity={0.15} speed={0.8}>
+      <FloatAny floatIntensity={0.7} rotationIntensity={0.15} speed={0.8}>
         <mesh ref={ringRef} position={[-1.5, -0.1, -0.2]}>
           <torusGeometry args={[1.4, 0.1, 16, 128]} />
           <meshStandardMaterial 
@@ -101,22 +103,22 @@ function HeroScene({ pointer, scrollY }: SceneProps) {
             roughness={0.3}
           />
         </mesh>
-      </Float>
+      </FloatAny>
 
       {/* Additional small floating particles */}
-      <Float floatIntensity={1.0} rotationIntensity={0.3} speed={2.0}>
+      <FloatAny floatIntensity={1.0} rotationIntensity={0.3} speed={2.0}>
         <mesh position={[-1.2, 1.2, 0.5]}>
           <sphereGeometry args={[0.25, 16, 16]} />
           <meshStandardMaterial color="#f9a8d4" opacity={0.7} transparent />
         </mesh>
-      </Float>
+      </FloatAny>
 
-      <Float floatIntensity={0.9} rotationIntensity={0.25} speed={1.8}>
+      <FloatAny floatIntensity={0.9} rotationIntensity={0.25} speed={1.8}>
         <mesh position={[1.5, 0.8, -0.5]}>
           <sphereGeometry args={[0.2, 16, 16]} />
           <meshStandardMaterial color="#c084fc" opacity={0.6} transparent />
         </mesh>
-      </Float>
+      </FloatAny>
     </group>
   );
 }
@@ -207,23 +209,18 @@ export function PremiumHero({ title, subtitle, ctaLabel, badge }: PremiumHeroPro
             custom={0.6}
             className="flex flex-wrap items-center gap-3 text-xs font-semibold text-slate-600"
           >
-            <span className="rounded-2xl bg-white/70 px-3 py-1 shadow-lg shadow-pink-200/40">
-              تجربۀ سه‌بعدی جدید
-            </span>
-            <span className="rounded-2xl border border-white/40 px-3 py-1 bg-white/20 text-brand-600">
-              کالکشنی برای دوستداران استایلینو
-            </span>
+            <span className="rounded-2xl bg-white/70 px-3 py-1 shadow-lg shadow-pink-200/40">کیفیت ممتاز و طراحی لوکس</span>
+            <span className="rounded-2xl border border-white/40 px-3 py-1 bg-white/20 text-brand-600">ارسال سریع و پرداخت امن</span>
           </motion.div>
           <motion.button
             initial="initial"
             whileHover="hover"
             variants={{ hover: { translateY: -2 } }}
+            type="button"
             className="relative inline-flex items-center gap-3 rounded-[26px] bg-gradient-to-r from-pink-500 to-brand-600 px-6 py-3 text-sm font-black uppercase tracking-wide text-white shadow-[0_20px_50px_rgba(244,114,182,0.4)] transition duration-300"
           >
             {ctaLabel}
-            <motion.span variants={arrowVariants} className="text-xl leading-none">
-              →
-            </motion.span>
+            <motion.span variants={arrowVariants} className="text-xl leading-none">→</motion.span>
           </motion.button>
         </div>
 
@@ -234,17 +231,17 @@ export function PremiumHero({ title, subtitle, ctaLabel, badge }: PremiumHeroPro
           className="flex flex-col gap-4 rounded-3xl border border-white/40 bg-white/70 p-5 shadow-[0_30px_60px_rgba(15,23,42,0.25)] backdrop-blur dark:bg-slate-900/60"
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold uppercase text-slate-500">KPI فروش</span>
+            <span className="text-xs font-semibold uppercase text-slate-500">KPI رشد فروش</span>
             <span className="text-2xl font-black text-slate-900 dark:text-white">+42%</span>
           </div>
           <div className="grid gap-3 text-xs text-slate-500">
             <div className="flex items-center justify-between rounded-2xl bg-slate-900/5 px-3 py-2 text-slate-600 dark:bg-white/10 dark:text-slate-200">
-              <span>نرخ تبدیل</span>
+              <span>نرخ تبدیل فروش</span>
               <span className="font-black text-pink-500">1.6x</span>
             </div>
             <div className="flex items-center justify-between rounded-2xl bg-pink-50/60 px-3 py-2 text-slate-600 dark:bg-slate-800/60 dark:text-slate-200">
-              <span>کارت‌های آنی</span>
-              <span className="font-black text-pink-600">سفارشی سازی</span>
+              <span>میانگین سبد خرید</span>
+              <span className="font-black text-pink-600">افزایش سفارش‌ها</span>
             </div>
           </div>
         </motion.div>
@@ -252,3 +249,4 @@ export function PremiumHero({ title, subtitle, ctaLabel, badge }: PremiumHeroPro
     </section>
   );
 }
+
