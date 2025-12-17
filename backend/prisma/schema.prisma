@@ -100,6 +100,18 @@ model Order {
   guestPhone    String?
   guestName     String?
   totalAmount   Float
+ main
+  status        OrderStatus   @default(PENDING)
+  paymentStatus PaymentStatus @default(UNPAID)
+  paymentAmount Int?
+  authority     String?       @unique
+  refId         BigInt?
+  cardPan       String?
+  feeType       String?
+  fee           Int?
+  paymentGateway String?      @default("ZARINPAL")
+  paymentMessage String?
+
   shippingAmount Float       @default(0)
   discountAmount Float       @default(0)
   status        String   @default("PENDING") @db.VarChar(50)

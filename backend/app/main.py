@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .core.config import get_settings
 from .db import prisma
+from .api.v1.endpoints import payments
 from .routers import auth, products, orders, seller, admin
 
 
@@ -37,3 +38,4 @@ app.include_router(products.router, prefix="/api/products", tags=["products"])
 app.include_router(orders.router, prefix="/api/orders", tags=["orders"])
 app.include_router(seller.router, prefix="/api/seller", tags=["seller"])
 app.include_router(admin.router, prefix="/api/admin", tags=["admin"])
+app.include_router(payments.router, prefix="/api")
