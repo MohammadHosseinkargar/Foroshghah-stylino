@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     
     # CORS settings
     cors_origins: str = "http://localhost:3000,http://localhost:3001"  # Comma-separated origins
+
+    # Frontend base URL used for redirects/CORS convenience
+    frontend_base_url: str = "http://localhost:3000"
     
     # Email settings (for verification and password reset)
     smtp_host: str = ""
@@ -31,7 +34,12 @@ class Settings(BaseSettings):
     @property
     def cors_origins_list(self) -> list[str]:
         """Parse comma-separated CORS origins into a list"""
-        return [origin.strip() for origin in self.cors_origins.split(",") if origin.strip()]
+        origins = {origin.strip() for origin in self.cors_origins.split(",") if origin.strip()}
+        if self.frontend_url:
+            origins.add(self.frontend_url.rstrip("/"))
+        if self.frontend_base_url:
+            origins.add(self.frontend_base_url.rstrip("/"))
+        return sorted(origins)
 
 
 @lru_cache
