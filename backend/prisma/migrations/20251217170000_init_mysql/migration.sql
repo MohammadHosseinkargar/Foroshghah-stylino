@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE `User` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `name` VARCHAR(191) NOT NULL,
@@ -93,9 +93,18 @@ CREATE TABLE `Order` (
     `shippingMethodId` INTEGER NULL,
     `trackingNumber` VARCHAR(191) NULL,
     `couponCode` VARCHAR(191) NULL,
+    `paymentAmount` INTEGER NULL,
+    `authority` VARCHAR(191) NULL,
+    `refId` BIGINT NULL,
+    `cardPan` VARCHAR(191) NULL,
+    `feeType` VARCHAR(191) NULL,
+    `fee` INTEGER NULL,
+    `paymentGateway` VARCHAR(50) NULL DEFAULT 'ZARINPAL',
+    `paymentMessage` TEXT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
+    UNIQUE INDEX `Order_authority_key`(`authority`),
     INDEX `Order_customerId_idx`(`customerId`),
     INDEX `Order_status_idx`(`status`),
     INDEX `Order_paymentStatus_idx`(`paymentStatus`),
