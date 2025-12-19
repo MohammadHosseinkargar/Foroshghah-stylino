@@ -48,41 +48,20 @@ export default function Home() {
 
   const displayProducts: DisplayProduct[] = useMemo(() => {
     const fallback: DisplayProduct[] = [
-      {
-        id: 1,
-        name: "U_UOOñOUØU+ O-OñUOOñ U_U,O_OOñ",
-        price: 1890000,
-        oldPrice: 2100000,
-        image: "",
-        tag: "%U^UOU~UØ",
-      },
-      {
-        id: 2,
-        name: "O3O¦ U,UOU+U+ O¦OO'O3O¦OU+UØ",
-        price: 2250000,
-        image: "",
-        tag: "%OªO_UOO_",
-      },
-      {
-        id: 3,
-        name: "U.OU+O¦U^ U,U+UOU+ O¦OO'O3O¦OU+UO",
-        price: 1990000,
-        oldPrice: 2150000,
-        image: "",
-        tag: "%O-OñOOª",
-      },
+      { id: 1, name: "مانتو تابستانی شیک", price: 1890000, oldPrice: 2100000, image: "", tag: "%تخفیف" },
+      { id: 2, name: "بلوز مجلسی زنانه", price: 2250000, image: "", tag: "%ویژه" },
+      { id: 3, name: "ست مانتو و شلوار", price: 1990000, oldPrice: 2150000, image: "", tag: "%پرفروش" },
     ];
 
-    if (!products || products.length === 0) {
-      return fallback;
-    }
+    if (!products || products.length === 0) return fallback;
+
     return products.map((p) => ({
       id: p.id,
       name: p.name,
       price: p.discountPrice ?? p.basePrice,
       oldPrice: p.discountPrice ? p.basePrice : null,
       image: p.images?.[0],
-      tag: p.discountPrice ? "%U^UOU~UØ" : undefined,
+      tag: p.discountPrice ? "%تخفیف" : undefined,
     })) as DisplayProduct[];
   }, [products]);
 
@@ -93,18 +72,13 @@ export default function Home() {
   };
 
   const handleAddToCart = (product: DisplayProduct) => {
-    addItem({
-      productId: product.id,
-      name: product.name,
-      price: product.price,
-      image: product.image,
-    });
+    addItem({ productId: product.id, name: product.name, price: product.price, image: product.image });
   };
 
   const goToCheckout = () => {
     setError(null);
     if (isEmpty || getTotalCount() === 0) {
-      setError("O3O'O_ OrOñUOO_ OrOU,UO OO3O¦.");
+      setError("سبد خرید خالی است.");
       return;
     }
     if (!token) {
@@ -120,56 +94,56 @@ export default function Home() {
     <div className="bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
       <div className="mx-auto max-w-6xl space-y-10 px-4 py-10 lg:px-6 lg:py-12">
         <HeroBanner
-          title="O-OñOOª O¦OO'O3O¦OU+UØ O¦O U3UøU¦ O¦OrU?UOU?"
-          subtitle="U.U+O¦OrO'ƒ?OO¦OñUOU+ OO3O¦OUOU,ƒ?OUØOUO O¦OO'O3O¦OU+UO O'O OOñO3OU, O3OñUOO1 U^ OU.OU+O¦ OOæOU,O¦ UcOU,O"
-          ctaLabel="U.O'OUØO_UØ U.O-OæU^U,OO¦"
+          title="حراج تابستانه تا ۳۰٪ تخفیف"
+          subtitle="جدیدترین استایل‌های زنانه با تخفیف‌های ویژه، ارسال سریع و پرداخت امن."
+          ctaLabel="مشاهده محصولات"
         />
 
         <div className="space-y-6">
           <CategoryStrip
             categories={[
-              { name: "U.OU+O¦U^", slug: "manteau" },
-              { name: "O'U^U.UOOý", slug: "blouse" },
-              { name: "U,O'OO3 U.OªU,O3UO", slug: "evening" },
-              { name: "O3O¦ OñOO-O¦UO", slug: "lounge" },
-              { name: "O'U,U^OOñ", slug: "pants" },
-              { name: "O-OñOOª U^UOU~UØ", slug: "sale" },
+              { name: "مانتو", slug: "manteau" },
+              { name: "بلوز", slug: "blouse" },
+              { name: "لباس مجلسی", slug: "evening" },
+              { name: "لباس راحتی", slug: "lounge" },
+              { name: "شلوار", slug: "pants" },
+              { name: "حراج", slug: "sale" },
             ]}
           />
 
           <TrustBar
             items={[
-              { title: "OOñO3OU, O3OñUOO1", desc: "O¦O-U^UOU, O_Oñ UcU^O¦OUØƒ?OO¦OñUOU+ OýU.OU+", icon: "dYss" },
-              { title: "OU.OU+O¦ O'OOýU_O'O¦ Uú OñU^OýUØ", desc: "O_Oñ OæU^OñO¦ O1O_U. OñOOUOO¦", icon: "ƒ+c‹,?" },
-              { title: "U_OñO_OOrO¦ OU.U+ OUOU+O¦OñU+O¦UO", desc: "O_OñU_OUØ OU.U+ O'OU+UcUO", icon: "dY'3" },
-              { title: "U_O'O¦UOO'OU+UO U^OO¦O3OU_", desc: "UØU.UOO'UØ O_Oñ O_O3O¦OñO3", icon: "dY'ª" },
+              { title: "ارسال سریع", desc: "ارسال سریع و پیگیری سفارش", icon: "🚚" },
+              { title: "پرداخت امن", desc: "درگاه پرداخت امن و معتبر", icon: "🔒" },
+              { title: "پشتیبانی", desc: "پشتیبانی آنلاین و پاسخ‌گویی سریع", icon: "💬" },
+              { title: "ضمانت بازگشت", desc: "۷ روز ضمانت بازگشت کالا", icon: "↩️" },
             ]}
           />
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-600 dark:text-slate-300">O_Oñ O-OU, O'OOñU_OøOOñUO U.O-OæU^U,OO¦...</p>
+          <p className="text-sm text-gray-600 dark:text-slate-300">در حال دریافت محصولات...</p>
         ) : error ? (
           <p className="text-sm text-red-600">{error}</p>
         ) : (
           <div className="space-y-10">
             <ProductSection
-              title="OªO_UOO_O¦OñUOU+ U.O-OæU^U,OO¦ OO3O¦OUOU,UOU+U^"
-              subtitle="OO3O¦OUOU,ƒ?OUØOUO U.U+O¦OrO' O'OñOUO OU.OñU^Oý"
+              title="جدیدترین محصولات"
+              subtitle="به‌روزترین انتخاب‌ها برای استایل شما"
               products={sections.newArrivals}
               onAdd={handleAddToCart}
               onQuickView={setQuickView}
             />
             <ProductSection
-              title="U_OñU?OñU^O'ƒ?OO¦OñUOU+ƒ?OUØO"
-              subtitle="U_OñU?OñU^O'ƒ?OUØOUO UØU?O¦UØ"
+              title="پرفروش‌ترین‌ها"
+              subtitle="محبوب‌ترین‌های این هفته"
               products={sections.bestSellers}
               onAdd={handleAddToCart}
               onQuickView={setQuickView}
             />
             <ProductSection
-              title="U_UOO'U+UØOO_ U^UOU~UØ OU.OñU^Oý"
-              subtitle="O¦OrU?UOU?ƒ?OUØOUO U.O-O_U^O_"
+              title="پیشنهاد ویژه"
+              subtitle="منتخب‌های تخفیف‌دار"
               products={sections.special}
               onAdd={handleAddToCart}
               onQuickView={setQuickView}
@@ -180,23 +154,21 @@ export default function Home() {
         <section className="glass-card border border-brand-50 p-5 shadow-lg ring-1 ring-white/10 dark:border-slate-800 dark:ring-black/30">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="badge">O3O'O_ OrOñUOO_</p>
-              <h3 className="text-xl font-bold text-brand-900 dark:text-white">O3O'O_ O'U.O</h3>
-              <p className="text-sm text-gray-600 dark:text-slate-400">
-                O3U?OOñO' U^OU,O1UO O'O API O'Ucƒ?OOU+O_ O®O'O¦ U.UOƒ?OO'U^O_.
-              </p>
+              <p className="badge">سبد خرید</p>
+              <h3 className="text-xl font-bold text-brand-900 dark:text-white">سبد خرید شما</h3>
+              <p className="text-sm text-gray-600 dark:text-slate-400">برای تکمیل خرید به صفحه پرداخت بروید.</p>
             </div>
-            <div className="text-lg font-bold text-brand-800 dark:text-brand-200">{totalPrice.toLocaleString()} O¦U^U.OU+</div>
+            <div className="text-lg font-bold text-brand-800 dark:text-brand-200">{totalPrice.toLocaleString("fa-IR")} تومان</div>
           </div>
 
           {isEmpty ? (
             <div className="mt-4 space-y-3">
-              <p className="text-sm text-gray-600 dark:text-slate-400">O3O'O_ OrOU,UO OO3O¦.</p>
+              <p className="text-sm text-gray-600 dark:text-slate-400">سبد خرید خالی است.</p>
               <button
                 onClick={() => router.push("/products")}
                 className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-700 dark:hover:bg-brand-500"
               >
-                U.O'OUØO_UØ U.O-OæU^U,OO¦ U.O-O'U^O'
+                مشاهده محصولات
               </button>
             </div>
           ) : (
@@ -209,7 +181,7 @@ export default function Home() {
                   <div>
                     <p className="font-semibold text-brand-900 dark:text-white">{i.name}</p>
                     <p className="text-xs text-gray-600 dark:text-slate-400">
-                      {i.quantity} O1O_O_ A- {i.price.toLocaleString()} = {(i.price * i.quantity).toLocaleString()} O¦U^U.OU+
+                      {i.quantity} عدد - {i.price.toLocaleString("fa-IR")} = {(i.price * i.quantity).toLocaleString("fa-IR")} تومان
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
@@ -230,7 +202,7 @@ export default function Home() {
                       className="text-sm text-red-500 transition hover:text-red-600 dark:text-red-300 dark:hover:text-red-200"
                       onClick={() => removeItem(i.productId)}
                     >
-                      O-OøU?
+                      حذف
                     </button>
                   </div>
                 </div>
@@ -241,21 +213,21 @@ export default function Home() {
                   onClick={goToCheckout}
                   className="w-full rounded-full bg-brand-600 px-5 py-3 text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700 dark:hover:bg-brand-500 sm:w-auto"
                 >
-                  OO_OU.UØ OrOñUOO_ U^ U_OñO_OOrO¦
+                  ادامه خرید و پرداخت
                 </button>
                 {user && (
                   <button
                     onClick={() => router.push("/orders")}
                     className="w-full rounded-full border border-brand-200 px-5 py-3 text-brand-800 transition hover:bg-brand-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 sm:w-auto"
                   >
-                    U.O'OUØO_UØ O3U?OOñO'ƒ?OUØOUO U.U+
+                    مشاهده سفارش‌ها
                   </button>
                 )}
                 <button
                   onClick={clearCart}
                   className="w-full rounded-full border border-brand-200 px-5 py-3 text-brand-800 transition hover:bg-brand-50 dark:border-slate-700 dark:text-slate-100 dark:hover:bg-slate-800 sm:w-auto"
                 >
-                  O.O3O¦O3OU, O3O'O_
+                  خالی کردن سبد
                 </button>
               </div>
             </div>
@@ -264,9 +236,9 @@ export default function Home() {
 
         <Testimonials
           items={[
-            { name: "OñUOO-OU+UØ U,OO3U.UO", city: "O¦UØOñOU+", text: "UcUOU?UOO¦ U_OOñU+UØƒ?OUØO O1OU,UO O'U^O_ U^ OOñO3OU, UØU. O3OñUOO1 OU+OªOU. O'O_.", rating: 5 },
-            { name: "U.UØO3O O'OU,OñUO", city: "OOæU?UØOU+", text: "U_O'O¦UOO'OU+UO U^OO¦O3OU_ OrUOU,UO O3OñUOO1 OªU^OO' O_OO_ U^ O3OUOOý U.U+OO3O' OñO OñOUØU+U.OUOUO UcOñO_.", rating: 5 },
-            { name: "O3U^U_U+O_ OrO3OñU^UO", city: "O'UOOñOOý", text: "O'O3O¦UØƒ?OO'U+O_UO O'UOUc O'U^O_ U^ O-O3 U,U^UcO3 O'U^O_U+ OrOñUOO_ OñO O_OO'O¦.", rating: 4 },
+            { name: "نگار محمدی", city: "تهران", text: "کیفیت عالی و ارسال سریع بود. خیلی راضی‌ام.", rating: 5 },
+            { name: "سارا احمدی", city: "اصفهان", text: "پشتیبانی سریع و بسته‌بندی شیک. پیشنهاد می‌کنم.", rating: 5 },
+            { name: "مریم رضایی", city: "مشهد", text: "تنوع محصولات خوبه و قیمت‌ها مناسب بود.", rating: 4 },
           ]}
         />
 
@@ -282,7 +254,7 @@ export default function Home() {
                   price: quickView.price,
                   oldPrice: quickView.oldPrice,
                   image: quickView.image,
-                  description: "O¦U^OUOO-OO¦ U.OrO¦OæOñ U.O-OæU^U, O'OñOUO U_UOO'ƒ?OU+U.OUOO' O3OñUOO1",
+                  description: "جزئیات محصول در این بخش نمایش داده می‌شود.",
                 }
               : undefined
           }
@@ -291,3 +263,4 @@ export default function Home() {
     </div>
   );
 }
+

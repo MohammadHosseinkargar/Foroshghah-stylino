@@ -1,189 +1,199 @@
 "use client";
-/* eslint-disable react/no-unescaped-entities */
 
-import { Suspense, type FormEvent, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { type AuthUser, useAuth } from "../../context/AuthContext";
+import { useAuth, type AuthUser } from "../../context/AuthContext";
+import { cn } from "../../lib/utils";
 
-const ROLE_PATH: Record<AuthUser["role"], string> = {
+const ROLE_PATHS: Record<AuthUser["role"], string> = {
   CUSTOMER: "/",
   SELLER: "/seller",
   ADMIN: "/admin",
 };
 
-function AuthContent() {
-  const [mode, setMode] = useState<"login" | "register">("login");
-  const [form, setForm] = useState({ name: "", email: "", password: "", phone: "", referralCode: "" });
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const { user, login, register, loading: authLoading } = useAuth();
+function AuthPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = useMemo(() => searchParams.get("redirect"), [searchParams]);
+  const { login, register, loading, user } = useAuth();
 
-  const redirectByRole = (role: AuthUser["role"]) => {
-    if (redirect) {
-      router.replace(redirect);
-      return;
-    }
-    router.replace(ROLE_PATH[role] ?? "/");
-  };
+  const redirect = searchParams.get("redirect");
+  const redirectPath = useMemo(() => redirect || (user ? ROLE_PATHS[user.role] : "/"), [redirect, user]);
+
+  const [mode, setMode] = useState<"login" | "register">("login");
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [referralCode, setReferralCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && user) {
-      redirectByRole(user.role);
+    if (!loading && user) {
+      router.replace(redirectPath);
     }
-  }, [authLoading, user]);
+  }, [loading, user, redirectPath, router]);
 
-  const validate = () => {
-    if (!form.email.trim()) return "ایمیل را وارد کنید.";
-    if (!form.password || form.password.length < 6) return "رمز عبور باید حداقل ۶ کاراکتر باشد.";
-    if (mode === "register" && !form.name.trim()) return "نام را وارد کنید.";
-    return null;
-  };
-
-  const onSubmit = async (e: FormEvent) => {
-    e.preventDefault();
+  const submit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError(null);
-    const validationMessage = validate();
-    if (validationMessage) {
-      setError(validationMessage);
-      return;
-    }
-    setLoading(true);
+    setSubmitting(true);
     try {
-      const signedUser =
-        mode === "login"
-          ? await login(form.email.trim(), form.password)
-          : await register({
-              name: form.name.trim(),
-              email: form.email.trim(),
-              phone: form.phone.trim(),
-              password: form.password,
-              referralCode: form.referralCode.trim(),
-            });
-      redirectByRole(signedUser.role);
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "خطا در احراز هویت. دوباره تلاش کنید.";
-      setError(message);
+      const trimmedEmail = email.trim();
+      const trimmedPassword = password;
+
+      if (!trimmedEmail || !trimmedPassword) {
+        setError("ایمیل و رمز عبور الزامی است.");
+        return;
+      }
+
+      if (mode === "login") {
+        const me = await login(trimmedEmail, trimmedPassword);
+        router.replace(redirect || ROLE_PATHS[me.role]);
+        return;
+      }
+
+      const trimmedName = name.trim();
+      if (!trimmedName) {
+        setError("نام و نام خانوادگی الزامی است.");
+        return;
+      }
+
+      const me = await register({
+        name: trimmedName,
+        email: trimmedEmail,
+        phone: phone.trim() || undefined,
+        password: trimmedPassword,
+        referralCode: referralCode.trim() || undefined,
+      });
+      router.replace(redirect || ROLE_PATHS[me.role]);
+    } catch (e: any) {
+      setError(e?.message || "خطا در انجام عملیات.");
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
-
-  if (authLoading) {
-    return <p className="text-gray-600">در حال بررسی نشست کاربر...</p>;
-  }
 
   return (
-    <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-6 sm:p-8">
-      <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <p className="badge">O-O3OO" UcOO�O"O�UO</p>
-          <h1 className="text-2xl font-bold text-brand-900">U^O�U^O_ / O�O"O��?OU+OU. OO3O�OUOU,UOU+U^</h1>
-        </div>
-        <div className="flex gap-2 rounded-full bg-brand-50 p-1 text-xs font-semibold text-brand-800">
-          <button
-            className={`rounded-full px-3 py-1 ${mode === "login" ? "bg-white shadow" : "opacity-70"}`}
-            onClick={() => setMode("login")}
-          >
-            U^O�U^O_
-          </button>
-          <button
-            className={`rounded-full px-3 py-1 ${mode === "register" ? "bg-white shadow" : "opacity-70"}`}
-            onClick={() => setMode("register")}
-          >
-            O�O"O��?OU+OU.
-          </button>
-        </div>
+    <div className="mx-auto w-full max-w-md space-y-6">
+      <div className="glass-card border border-brand-50 p-6 text-right">
+        <p className="badge">حساب کاربری</p>
+        <h1 className="text-2xl font-bold text-brand-900">ورود / ثبت‌نام</h1>
+        <p className="mt-2 text-sm text-gray-600">برای ثبت سفارش و مدیریت سفارش‌ها وارد شوید.</p>
       </div>
 
-      <form className="space-y-4" onSubmit={onSubmit}>
-        {mode === "register" && (
-          <div className="grid gap-3 md:grid-cols-2">
-            <div>
-              <label className="block text-sm font-semibold text-brand-900">U+OU. U^ U+OU. OrOU+U^OO_U_UO</label>
-              <input
-                required
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
-                placeholder="U+OU. O'U.O"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-semibold text-brand-900">O'U.OO�U� O�U.OO3 (OOrO�UOOO�UO)</label>
-              <input
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="mt-1 w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
-                placeholder="09xxxxxxxxx"
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="grid gap-3 md:grid-cols-2">
-          <div>
-            <label className="block text-sm font-semibold text-brand-900">OUOU.UOU,</label>
-            <input
-              required
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
-              placeholder="you@example.com"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-semibold text-brand-900">O�U.O� O1O\"U^O�</label>
-            <input
-              required
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
-              placeholder="O-O_OU,U, U, UcOO�OUcO�O�"
-            />
-          </div>
+      <div className="rounded-3xl border border-brand-50 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/80">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setMode("login")}
+            className={cn(
+              "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition",
+              mode === "login"
+                ? "bg-brand-600 text-white shadow-soft"
+                : "bg-brand-50 text-brand-800 ring-1 ring-brand-100 hover:bg-brand-100 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-700"
+            )}
+          >
+            ورود
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("register")}
+            className={cn(
+              "flex-1 rounded-full px-4 py-2 text-sm font-semibold transition",
+              mode === "register"
+                ? "bg-brand-600 text-white shadow-soft"
+                : "bg-brand-50 text-brand-800 ring-1 ring-brand-100 hover:bg-brand-100 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-700"
+            )}
+          >
+            ثبت‌نام
+          </button>
         </div>
 
-        {mode === "register" && (
-          <div>
-            <label className="block text-sm font-semibold text-brand-900">UcO_ O_O1U^O� (OOrO�UOOO�UO)</label>
+        <form onSubmit={submit} className="mt-6 space-y-4">
+          {mode === "register" && (
+            <label className="block space-y-2 text-sm text-brand-900 dark:text-slate-100">
+              نام و نام خانوادگی
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full rounded-xl border border-brand-100 px-3 py-2 text-sm outline-none transition focus:border-brand-300 focus:ring-1 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900"
+                placeholder="مثلاً: سارا احمدی"
+                autoComplete="name"
+              />
+            </label>
+          )}
+
+          <label className="block space-y-2 text-sm text-brand-900 dark:text-slate-100">
+            ایمیل
             <input
-              value={form.referralCode}
-              onChange={(e) => setForm({ ...form, referralCode: e.target.value })}
-              className="mt-1 w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm focus:border-brand-400 focus:outline-none"
-              placeholder="UcO_ U.O1O�U? OrU^O_ O�O U^OO�O_ UcU+UOO_"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full rounded-xl border border-brand-100 px-3 py-2 text-sm outline-none transition focus:border-brand-300 focus:ring-1 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900"
+              placeholder="example@email.com"
+              autoComplete="email"
+              inputMode="email"
             />
-            <p className="mt-1 text-xs text-gray-600">O\"O O�O\"O� UcO_ O_O1U^O�OO U.O1O�U? O'U.O OO� O3U?OO�O'�?OU�OUO O'U.O U_U^O�O3OU+O� O_O�UOOU?O� U.UO�?OUcU+O_.</p>
-          </div>
-        )}
+          </label>
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+          {mode === "register" && (
+            <label className="block space-y-2 text-sm text-brand-900 dark:text-slate-100">
+              موبایل (اختیاری)
+              <input
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full rounded-xl border border-brand-100 px-3 py-2 text-sm outline-none transition focus:border-brand-300 focus:ring-1 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900"
+                placeholder="09xxxxxxxxx"
+                autoComplete="tel"
+                inputMode="tel"
+              />
+            </label>
+          )}
 
-        <button
-          disabled={loading || authLoading}
-          className="w-full rounded-xl bg-brand-600 px-4 py-3 text-white transition hover:-translate-y-0.5 hover:bg-brand-700 disabled:opacity-70"
-        >
-          {loading ? "در حال ارسال..." : mode === "login" ? "ورود" : "ثبت‌نام"}
-        </button>
-      </form>
+          <label className="block space-y-2 text-sm text-brand-900 dark:text-slate-100">
+            رمز عبور
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full rounded-xl border border-brand-100 px-3 py-2 text-sm outline-none transition focus:border-brand-300 focus:ring-1 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900"
+              placeholder="••••••••"
+              type="password"
+              autoComplete={mode === "login" ? "current-password" : "new-password"}
+            />
+          </label>
+
+          {mode === "register" && (
+            <label className="block space-y-2 text-sm text-brand-900 dark:text-slate-100">
+              کد معرف (اختیاری)
+              <input
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value)}
+                className="w-full rounded-xl border border-brand-100 px-3 py-2 text-sm outline-none transition focus:border-brand-300 focus:ring-1 focus:ring-brand-200 dark:border-slate-700 dark:bg-slate-900"
+                placeholder="کد معرف"
+                autoComplete="off"
+              />
+            </label>
+          )}
+
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex w-full items-center justify-center rounded-full bg-brand-600 px-5 py-3 text-sm font-semibold text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-brand-200 dark:hover:bg-brand-500"
+          >
+            {submitting ? "در حال ارسال..." : mode === "login" ? "ورود" : "ثبت‌نام"}
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
 
 export default function AuthPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="glass-card mx-auto max-w-2xl border border-brand-50 p-6 text-center text-sm text-gray-600 sm:p-8">
-          در حال بارگذاری حساب کاربری...
-        </div>
-      }
-    >
-      <AuthContent />
+    <Suspense fallback={<div className="h-24" />}>
+      <AuthPageInner />
     </Suspense>
   );
 }
