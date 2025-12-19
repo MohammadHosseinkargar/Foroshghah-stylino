@@ -27,7 +27,7 @@ type OrderResponse = {
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, total, removeItem, clear } = useCart();
+  const { items, removeItem, clearCart, getTotalPrice } = useCart();
   const { user, token, loading } = useAuth();
   const [mobile, setMobile] = useState("");
   const [email, setEmail] = useState("");
@@ -46,6 +46,7 @@ export default function CheckoutPage() {
   }, [loading, user, token, router]);
 
   const totalQuantity = useMemo(() => items.reduce((sum, item) => sum + item.quantity, 0), [items]);
+  const total = getTotalPrice();
 
   const handlePay = async () => {
     setError(null);
@@ -82,7 +83,7 @@ export default function CheckoutPage() {
         },
         token
       );
-      clear();
+      clearCart();
       window.location.href = payment.payment_url;
     } catch (e: any) {
       setError(e.message || "خطا در ایجاد تراکنش");
