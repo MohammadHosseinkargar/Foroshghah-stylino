@@ -35,7 +35,10 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [quickView, setQuickView] = useState<DisplayProduct | null>(null);
   const { addItem, items, total, removeItem } = useCart();
+<<<<<<< HEAD
+=======
   const { addItem, items, removeItem, decrementItem, clearCart, getTotalPrice, getTotalCount, isEmpty } = useCart();
+>>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
   const { token, user } = useAuth();
   const router = useRouter();
 
@@ -105,6 +108,13 @@ export default function Home() {
     setError(null);
     if (items.length === 0) {
       setError("سبد خرید خالی است.");
+<<<<<<< HEAD
+      return;
+    }
+    if (!token) {
+      router.push("/auth?redirect=/checkout");
+      return;
+=======
       return;
     }
     if (!token) {
@@ -137,6 +147,7 @@ export default function Home() {
       clearCart();
     } catch (e: any) {
       setError(e.message || "Failed to place order.");
+>>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
     }
     router.push("/checkout");
   };
@@ -236,11 +247,14 @@ export default function Home() {
                 className="rounded-full bg-brand-600 px-5 py-3 text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700"
               >
                 ادامه خرید و پرداخت
+<<<<<<< HEAD
+=======
           {isEmpty ? (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-gray-600 dark:text-slate-400">سبد خالی است.</p>
               <button className="rounded-full bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:bg-brand-700 dark:hover:bg-brand-500">
                 مشاهده محصولات محبوب
+>>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
               </button>
             </div>
           ) : (

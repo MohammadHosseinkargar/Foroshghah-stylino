@@ -1,5 +1,17 @@
 "use client";
 
+<<<<<<< HEAD
+import { useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { type AuthUser, useAuth } from "../../context/AuthContext";
+
+const ROLE_PATH: Record<AuthUser["role"], string> = {
+  CUSTOMER: "/",
+  SELLER: "/seller",
+  ADMIN: "/admin",
+};
+=======
+>>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
 
 import { useEffect, useMemo, useState } from "react";
 import { Suspense, useEffect, useState } from "react";

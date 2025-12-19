@@ -19,6 +19,11 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { cn } from "../lib/utils";
+<<<<<<< HEAD
+import { useCart } from "../context/CartContext";
+import { useEffect, useState } from "react";
+=======
+>>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
 
 import { useCart } from "../context/CartContext";
 import { useEffect, useState } from "react";
@@ -42,6 +47,8 @@ export function NavBar() {
   const { items } = useCart();
   const [scrolled, setScrolled] = useState(false);
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+<<<<<<< HEAD
+=======
 
   const { user, logout, loading: authLoading } = useAuth();
   const [scrolled, setScrolled] = useState(false);
@@ -49,6 +56,7 @@ export function NavBar() {
   const { count: wishlistCount } = useWishlist();
   const [searchTerm, setSearchTerm] = useState("");
   const cartCount = getTotalCount();
+>>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
 
   const handleLogout = () => {
     if (authLoading) return;
