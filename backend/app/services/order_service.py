@@ -231,10 +231,6 @@ async def mark_order_paid(
     order_id: int,
     requested_by: int,
     is_admin: bool = False,
-<<<<<<< HEAD
-=======
- main
->>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
     payment_update: dict | None = None,
 ):
     order = await prisma.order.find_unique(where={"id": order_id})
@@ -242,10 +238,6 @@ async def mark_order_paid(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="سفارش یافت نشد")
     if not is_admin and order.customerId != requested_by:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="شما مالک این سفارش نیستید")
-
-    transaction_id: Optional[str] = None,
-    gateway: str = "MANUAL",
-):
     """
     Mark order as paid with transaction support to prevent race conditions.
     Uses database transaction to ensure atomicity.
@@ -261,39 +253,17 @@ async def mark_order_paid(
             if not is_admin and order.customerId != requested_by:
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="شما مالک این سفارش نیستید")
 
-<<<<<<< HEAD
-=======
             # Check if already paid (prevent double payment)
             if order.paymentStatus == "PAID":
                 return order
+            data = {"paymentStatus": "PAID", "status": "PAID"}
+            if payment_update:
+                data.update(payment_update)
 
- main
->>>>>>> d883c84319dca23021cea7359aa879ecb5535de4
-    data = {"paymentStatus": "PAID", "status": "PAID"}
-    if payment_update:
-        data.update(payment_update)
-    updated = await prisma.order.update(
-        where={"id": order_id},
-        data=data,
-    )
-
-            # Update order status atomically
             updated = await transaction.order.update(
                 where={"id": order_id},
-                data={"paymentStatus": "PAID", "status": "PAID"},
+                data=data,
             )
-
-            # Create payment transaction record if transaction_id provided
-            if transaction_id:
-                await transaction.paymenttransaction.create(
-                    data={
-                        "orderId": order_id,
-                        "transactionId": transaction_id,
-                        "gateway": gateway,
-                        "amount": order.totalAmount,
-                        "status": "SUCCESS",
-                    }
-                )
 
             # Create commissions (only if customer exists)
             if order.customerId:
@@ -301,7 +271,7 @@ async def mark_order_paid(
                     transaction,
                     buyer_id=order.customerId,
                     order_id=order.id,
-                    amount=order.totalAmount
+                    amount=order.totalAmount,
                 )
     except HTTPException:
         raise

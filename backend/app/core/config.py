@@ -7,13 +7,6 @@ class Settings(BaseSettings):
     database_url: str
     jwt_secret: str
     jwt_algorithm: str = "HS256"
- main
-    access_token_expire_minutes: int = 60 * 24
-    zarinpal_merchant_id: str = ""
-    zarinpal_sandbox: bool = True
-    zarinpal_callback_url: str = ""
-    frontend_base_url: str = "http://localhost:3000"
-
     access_token_expire_minutes: int = 30  # Reduced from 24 hours to 30 minutes
     refresh_token_expire_days: int = 7
     
