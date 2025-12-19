@@ -19,6 +19,9 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { cn } from "../lib/utils";
+
+import { useCart } from "../context/CartContext";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "./ThemeToggle";
 
 type NavLink = { href: string; label: string; icon: ComponentType<{ className?: string }> };
@@ -35,6 +38,11 @@ export function NavBar() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { user, logout } = useAuth();
+  const { items } = useCart();
+  const [scrolled, setScrolled] = useState(false);
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+
   const { user, logout, loading: authLoading } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const { getTotalCount } = useCart();
@@ -222,6 +230,31 @@ export function NavBar() {
               )}
             </div>
           </div>
+
+          <div className="flex items-center gap-3 text-brand-800">
+            <button className="relative rounded-full bg-brand-50 p-2 transition hover:-translate-y-0.5 hover:bg-brand-100" title="علاقه‌مندی‌ها">
+              <Heart className="h-5 w-5" />
+              <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-brand-600 text-[10px] font-bold text-white">1</span>
+            </button>
+            <Link
+              href="/checkout"
+              className="relative rounded-full bg-brand-50 p-2 transition hover:-translate-y-0.5 hover:bg-brand-100"
+              title="سبد خرید / سفارش‌ها"
+            >
+              <ShoppingBag className="h-5 w-5" />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 min-h-4 min-w-4 rounded-full bg-brand-600 px-1 text-[10px] font-bold text-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+            <Link
+              href="/auth"
+              className="rounded-full bg-brand-50 p-2 transition hover:-translate-y-0.5 hover:bg-brand-100"
+              title="حساب کاربری"
+            >
+              <UserRound className="h-5 w-5" />
+            </Link>
 
           <div className="flex gap-2 overflow-x-auto pb-1 sm:hidden">
             {filteredLinks.map((link) => (

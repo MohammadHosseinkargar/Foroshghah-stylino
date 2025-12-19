@@ -32,9 +32,9 @@ type Product = {
 export default function Home() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [orderMessage, setOrderMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [quickView, setQuickView] = useState<DisplayProduct | null>(null);
+  const { addItem, items, total, removeItem } = useCart();
   const { addItem, items, removeItem, decrementItem, clearCart, getTotalPrice, getTotalCount, isEmpty } = useCart();
   const { token, user } = useAuth();
   const router = useRouter();
@@ -101,8 +101,15 @@ export default function Home() {
     });
   };
 
-  const placeOrder = async () => {
+  const goToCheckout = () => {
     setError(null);
+    if (items.length === 0) {
+      setError("سبد خرید خالی است.");
+      return;
+    }
+    if (!token) {
+      router.push("/auth?redirect=/checkout");
+      return;
     setOrderMessage(null);
     if (!token) {
       router.push("/auth");
@@ -131,6 +138,7 @@ export default function Home() {
     } catch (e: any) {
       setError(e.message || "Failed to place order.");
     }
+    router.push("/checkout");
   };
 
   const totalPrice = getTotalPrice();
@@ -205,6 +213,29 @@ export default function Home() {
             </div>
             <div className="text-lg font-bold text-brand-800 dark:text-brand-200">{totalPrice.toLocaleString()} تومان</div>
           </div>
+
+        ) : (
+          <div className="mt-4 space-y-3">
+            {items.map((i) => (
+              <div key={i.productId} className="flex items-center justify-between rounded-xl border border-brand-50 px-3 py-3">
+                <div>
+                  <p className="font-semibold text-brand-900">{i.name}</p>
+                  <p className="text-xs text-gray-600">
+                    {i.quantity} عدد × {i.price.toLocaleString()} = {(i.price * i.quantity).toLocaleString()} تومان
+                  </p>
+                </div>
+                <button className="text-sm text-red-500" onClick={() => removeItem(i.productId)}>
+                  حذف
+                </button>
+              </div>
+            ))}
+            {error && <p className="text-sm text-red-600">{error}</p>}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={goToCheckout}
+                className="rounded-full bg-brand-600 px-5 py-3 text-white shadow-soft transition hover:-translate-y-0.5 hover:bg-brand-700"
+              >
+                ادامه خرید و پرداخت
           {isEmpty ? (
             <div className="mt-4 space-y-3">
               <p className="text-sm text-gray-600 dark:text-slate-400">سبد خالی است.</p>

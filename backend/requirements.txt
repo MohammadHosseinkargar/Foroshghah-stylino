@@ -8,3 +8,4 @@ pydantic-settings>=2.2.1
 python-multipart==0.0.6
 # bcrypt 4.x U+OO3OO�U_OO� O"O passlib 1.7 OO3O�
 bcrypt==3.2.2
+httpx==0.27.0

@@ -231,6 +231,15 @@ async def mark_order_paid(
     order_id: int,
     requested_by: int,
     is_admin: bool = False,
+ main
+    payment_update: dict | None = None,
+):
+    order = await prisma.order.find_unique(where={"id": order_id})
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="سفارش یافت نشد")
+    if not is_admin and order.customerId != requested_by:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="شما مالک این سفارش نیستید")
+
     transaction_id: Optional[str] = None,
     gateway: str = "MANUAL",
 ):
@@ -252,6 +261,15 @@ async def mark_order_paid(
             # Check if already paid (prevent double payment)
             if order.paymentStatus == "PAID":
                 return order
+
+ main
+    data = {"paymentStatus": "PAID", "status": "PAID"}
+    if payment_update:
+        data.update(payment_update)
+    updated = await prisma.order.update(
+        where={"id": order_id},
+        data=data,
+    )
 
             # Update order status atomically
             updated = await transaction.order.update(
