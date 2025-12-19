@@ -1,0 +1,6 @@
+{
+  "files.associations": {
+    "**/backend/prisma/migrations/**/migration.sql": "plaintext"
+  }
+}
+

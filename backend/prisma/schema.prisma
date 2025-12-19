@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlserver"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -70,9 +70,9 @@ model Product {
   categoryId    Int
   category      Category @relation(fields: [categoryId], references: [id], onDelete: NoAction, onUpdate: NoAction)
   brand         String
-  colors        String   @db.NVarChar(max)
-  sizes         String   @db.NVarChar(max)
-  images        String   @db.NVarChar(max)
+  colors        String   @db.LongText
+  sizes         String   @db.LongText
+  images        String   @db.LongText
   isActive      Boolean  @default(true)
   stock         Int      @default(0)
   sku           String?
@@ -246,7 +246,7 @@ model PaymentTransaction {
   gateway         String
   amount          Float
   status          String
-  gatewayResponse String?  @db.NVarChar(max)
+  gatewayResponse String?  @db.LongText
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
