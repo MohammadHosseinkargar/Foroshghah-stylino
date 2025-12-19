@@ -24,11 +24,11 @@ import { ThemeToggle } from "./ThemeToggle";
 type NavLink = { href: string; label: string; icon: ComponentType<{ className?: string }> };
 
 const links: NavLink[] = [
-  { href: "/products", label: "Ù…Ø­ØµÙˆÙ„Ø§Øª", icon: LayoutGrid },
-  { href: "/search", label: "Ø¬Ø³ØªØ¬Ùˆ", icon: Sparkles },
-  { href: "/seller", label: "Ù¾Ù†Ù„ ÙØ±ÙˆØ´Ù†Ø¯Ù‡", icon: Store },
-  { href: "/orders", label: "Ø³ÙØ§Ø±Ø´â€ŒÙ‡Ø§", icon: ShoppingBag },
-  { href: "/admin", label: "Ù…Ø¯ÛŒØ±ÛŒØª", icon: ShieldCheck },
+  { href: "/products", label: "محصولات", icon: LayoutGrid },
+  { href: "/search", label: "جستجو", icon: Sparkles },
+  { href: "/seller", label: "پنل فروشنده", icon: Store },
+  { href: "/orders", label: "سفارش‌ها", icon: ShoppingBag },
+  { href: "/admin", label: "مدیریت", icon: ShieldCheck },
 ];
 
 export function NavBar() {
@@ -102,9 +102,9 @@ export function NavBar() {
                   S
                 </span>
                 <div className="min-w-0 leading-tight">
-                  <p className="truncate text-sm font-black md:text-base">Ø§Ø³ØªØ§ÛŒÙ„ÛŒÙ†Ùˆ</p>
+                  <p className="truncate text-sm font-black md:text-base">استایلینو</p>
                   <p className="text-[10px] font-semibold text-brand-600 md:text-xs dark:text-slate-300">
-                    Ø¨Ø§Ø²Ø§Ø± Ø¢Ù†Ù„Ø§ÛŒÙ† Ù…Ø¯ Ø²Ù†Ø§Ù†Ù‡
+                    بازار آنلاین مد زنانه
                   </p>
                 </div>
               </Link>
@@ -148,17 +148,17 @@ export function NavBar() {
               className="group flex w-full items-center gap-2 rounded-full border border-brand-100 bg-gray-50 px-3 py-2 text-sm shadow-sm ring-1 ring-transparent transition focus-within:border-brand-200 focus-within:ring-brand-100 dark:border-slate-700 dark:bg-slate-800 dark:ring-slate-700/60 dark:focus-within:border-brand-400 dark:focus-within:ring-brand-500/30 md:max-w-xl"
             >
               <Search className="h-5 w-5 text-brand-600 transition group-focus-within:text-brand-700 dark:text-slate-300 dark:group-focus-within:text-white" />
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Search products..."
-                className="w-full border-none bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-slate-100 dark:placeholder:text-slate-500"
-              />
+                <input
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="جستجو در محصولات..."
+                  className="w-full border-none bg-transparent text-sm outline-none placeholder:text-gray-400 dark:text-slate-100 dark:placeholder:text-slate-500"
+                />
               <button
                 type="submit"
                 className="rounded-full bg-brand-600 px-3 py-2 text-xs font-bold text-white transition hover:-translate-y-0.5 hover:bg-brand-700 dark:hover:bg-brand-500 md:px-4"
               >
-                Ø¬Ø³ØªØ¬Ùˆ
+                جستجو
               </button>
             </form>
 
@@ -202,7 +202,7 @@ export function NavBar() {
                   className="hidden items-center gap-2 rounded-full border border-brand-100 bg-white px-3 py-2 text-xs font-semibold text-brand-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-70 sm:flex"
                 >
                   <UserRound className="h-5 w-5 text-brand-700 dark:text-slate-100" />
-                  <span>Ø®Ø±ÙˆØ¬ | {user.name}</span>
+                  <span>خروج | {user.name}</span>
                 </button>
               ) : (
                 <Link
@@ -210,14 +210,14 @@ export function NavBar() {
                   className="hidden items-center gap-2 rounded-full border border-brand-100 bg-white px-3 py-2 text-xs font-semibold text-brand-800 shadow-sm transition hover:-translate-y-0.5 hover:border-brand-200 hover:bg-brand-50 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 dark:hover:border-slate-600 dark:hover:bg-slate-700 sm:flex"
                 >
                   <UserRound className="h-5 w-5 text-brand-700 dark:text-slate-100" />
-                  <span>Ø­Ø³Ø§Ø¨ Ú©Ø§Ø±Ø¨Ø±ÛŒ | ÙˆØ±ÙˆØ¯ / Ø«Ø¨Øªâ€ŒÙ†Ø§Ù…</span>
+                  <span>حساب کاربری | ورود / ثبت‌نام</span>
                 </Link>
               )}
             </div>
           </div>
 
           <div className="flex items-center gap-3 text-brand-800">
-            <button className="relative rounded-full bg-brand-50 p-2 transition hover:-translate-y-0.5 hover:bg-brand-100" title="Ø¹Ù„Ø§Ù‚Ù‡â€ŒÙ…Ù†Ø¯ÛŒâ€ŒÙ‡Ø§">
+            <button className="relative rounded-full bg-brand-50 p-2 transition hover:-translate-y-0.5 hover:bg-brand-100">
               <Heart className="h-5 w-5" />
               <span className="absolute -right-1 -top-1 h-4 w-4 rounded-full bg-brand-600 text-[10px] font-bold text-white">1</span>
             </button>
@@ -282,8 +282,8 @@ export function NavBar() {
               className="flex items-center gap-2 rounded-full bg-brand-50 px-4 py-2 text-xs font-semibold text-brand-700 ring-1 ring-brand-100 transition hover:-translate-y-0.5 hover:bg-brand-100 dark:bg-slate-800 dark:text-slate-100 dark:ring-slate-700 dark:hover:bg-slate-700"
             >
               <MapPin className="h-4 w-4 text-brand-600 dark:text-slate-200" />
-              <span className="hidden sm:inline">Ø§Ø±Ø³Ø§Ù„ Ø¨Ù‡ ØªÙ‡Ø±Ø§Ù† | Ù…Ù‚ØµØ¯ Ø±Ø§ Ø§Ù†ØªØ®Ø§Ø¨ Ú©Ù†ÛŒØ¯</span>
-              <span className="sm:hidden">ØªØºÛŒÛŒØ± Ù…Ù‚ØµØ¯</span>
+              <span className="hidden sm:inline">ارسال به تهران | مقصد را انتخاب کنید</span>
+              <span className="sm:hidden">تغییر مقصد</span>
             </button>
           </div>
         </div>

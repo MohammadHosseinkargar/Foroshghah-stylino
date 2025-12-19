@@ -156,11 +156,11 @@ export function ProductCard({
         <h3 className="line-clamp-2 text-sm font-black text-slate-900 dark:text-white sm:text-base">{name}</h3>
         <div className="flex items-center gap-3">
           <span className="text-lg font-black text-pink-600 dark:text-pink-400">
-            {price.toLocaleString("fa-IR")} ØªÙˆÙ…Ø§Ù†
+            {price.toLocaleString("fa-IR")} تومان
           </span>
           {hasDiscount && (
             <span className="text-xs text-slate-400 line-through dark:text-slate-500">
-              {oldPrice?.toLocaleString("fa-IR")} ØªÙˆÙ…Ø§Ù†
+              {oldPrice?.toLocaleString("fa-IR")} تومان
             </span>
           )}
         </div>

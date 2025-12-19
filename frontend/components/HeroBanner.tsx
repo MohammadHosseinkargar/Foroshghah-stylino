@@ -8,13 +8,22 @@ type Props = {
   image?: string;
 };
 
-export function HeroBanner({ title, subtitle, ctaLabel, pill = "حراج تابستانه استایلینو", image }: Props) {
+export function HeroBanner({
+  title,
+  subtitle,
+  ctaLabel,
+  pill = "حراج تابستانه استایلینو",
+  image,
+}: Props) {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-slate-900/95 to-slate-950 text-slate-100 shadow-xl ring-1 ring-white/10 dark:from-slate-900 dark:via-slate-950 dark:to-black">
       <div className="absolute inset-0 opacity-80">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(247,140,178,0.15),transparent_35%),radial-gradient(circle_at_80%_10%,rgba(244,114,182,0.12),transparent_30%)]" />
         {image ? (
-          <div style={{ backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" }} className="absolute inset-0 mix-blend-overlay" />
+          <div
+            style={{ backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" }}
+            className="absolute inset-0 mix-blend-overlay"
+          />
         ) : null}
       </div>
       <div className="relative z-10 grid gap-6 px-5 py-8 sm:px-7 sm:py-10 md:grid-cols-2 md:items-center md:px-10 md:py-12">
@@ -22,9 +31,7 @@ export function HeroBanner({ title, subtitle, ctaLabel, pill = "حراج تاب�
           <span className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-xs font-semibold text-white ring-1 ring-white/15 backdrop-blur">
             {pill}
           </span>
-          <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl md:text-5xl">
-            {title}
-          </h1>
+          <h1 className="text-3xl font-extrabold leading-tight text-white sm:text-4xl md:text-5xl">{title}</h1>
           <p className="text-base text-slate-200 sm:text-lg">{subtitle}</p>
           <Link
             href="#catalog"
@@ -58,3 +65,4 @@ export function HeroBanner({ title, subtitle, ctaLabel, pill = "حراج تاب�
     </section>
   );
 }
+
