@@ -5,7 +5,7 @@ WORKDIR /app
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     # Prisma needs DATABASE_URL at generate-time even if it doesn't connect.
-    DATABASE_URL="sqlserver://localhost:1433;database=stylino_db;user=stylino;password=stylino;encrypt=true;trustServerCertificate=true"
+    DATABASE_URL="mysql://stylino:stylino@localhost:3306/stylino_db"
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates \
